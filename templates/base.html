@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ARITANA - Sistema de Monitoramento{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- CSS customizado -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/aritana.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Logo e Título Centralizados -->
+            <div class="text-center space-y-6">
+                <!-- Logo -->
+                <div class="flex justify-center">
+                    <img src="{% static 'img/logo.png' %}" alt="ARITANA Logo" class="w-20 h-20 object-contain">
+                </div>
+                
+                <!-- Título Principal -->
+                <div>
+                    <h1 class="text-4xl font-bold text-blue-600 mb-3">ARITANA</h1>
+                    <p class="text-base text-gray-700 leading-relaxed max-w-2xl mx-auto">
+                        Sistema de identificação e monitoramento de embarcações na região de<br>
+                        Belém do Pará
+                    </p>
+                </div>
+                
+                <!-- Tabs de Navegação -->
+                <div class="flex justify-center pt-4">
+                    <div class="flex space-x-6">
+                        <button 
+                            id="tab-principal" 
+                            class="tab-active px-4 py-2 text-sm font-medium"
+                            onclick="ARITANA.Core.switchTab('principal')"
+                        >
+                            Proteção Ambiental
+                        </button>
+                        <button 
+                            id="tab-localizacoes" 
+                            class="tab-inactive px-4 py-2 text-sm font-medium"
+                            onclick="ARITANA.Core.switchTab('localizacoes')"
+                        >
+                            Segurança Fluvial
+                        </button>
+                        <button 
+                            id="tab-graficos" 
+                            class="tab-inactive px-4 py-2 text-sm font-medium"
+                            onclick="ARITANA.Core.switchTab('graficos')"
+                        >
+                            Amazônia Legal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t border-gray-200 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Logo e Descrição -->
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12">
+                            <img src="{% static 'img/logo.png' %}" alt="ARITANA Logo" class="w-12 h-12 object-contain">
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">AmazôniaPortoSeguro</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        Sistema inteligente de monitoramento e identificação de embarcações na região amazônica, 
+                        contribuindo para a preservação ambiental e segurança fluvial em Belém do Pará.
+                    </p>
+                    <div class="inline-block">
+                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                            Proteção Ambiental
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Links Úteis -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Links Úteis</h3>
+                    <div class="space-y-2">
+                        <a href="#" class="block text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                            Como Funciona
+                        </a>
+                        <a href="#" class="block text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                            Documentação
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Informações -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Informações</h3>
+                    <div class="space-y-2">
+                        <p class="text-sm text-gray-600">
+                            Região: Belém - PA
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            Cobertura: Baía do Guajará
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="mt-8 pt-8 border-t border-gray-200">
+                <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                    <!-- Copyright -->
+                    <div class="text-sm text-gray-500">
+                        © 2025 AmazôniaPortoSeguro. Desenvolvido para proteção da Amazônia Legal.
+                    </div>
+
+                    <!-- Logos das Universidades -->
+                    <div class="flex items-center space-x-6">
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-blue-600 rounded flex items-center justify-center mb-1">
+                                <span class="text-white font-bold text-xs">UFAL</span>
+                            </div>
+                            <span class="text-xs text-gray-500 text-center leading-tight">
+                                UNIVERSIDADE FEDERAL<br>DE ALAGOAS
+                            </span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-red-600 rounded flex items-center justify-center mb-1">
+                                <span class="text-white font-bold text-xs">UFPA</span>
+                            </div>
+                            <span class="text-xs text-gray-500 text-center leading-tight">
+                                UNIVERSIDADE<br>FEDERAL<br>DO PARÁ
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{% static 'js/aritana-core.js' %}"></script>
+    <script src="{% static 'js/statistics-loader.js' %}"></script>
+    <script src="{% static 'js/map-loader.js' %}"></script>
+    <script src="{% static 'js/upload-manager.js' %}"></script>
+
+    <!-- Inicialização dos ícones Lucide -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            
+            // Inicializar o sistema ARITANA
+            if (typeof ARITANA !== 'undefined') {
+                ARITANA.Core.init();
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

@@ -1,0 +1,235 @@
+<!-- Seção de Estatísticas (oculta por padrão) -->
+<div id="statsSection" class="mt-8 hidden">
+    <div class="mb-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Gráficos e Estatísticas</h2>
+        <p class="text-gray-600">Análise detalhada dos dados de monitoramento de embarcações</p>
+    </div>
+    
+    <!-- Cards de Estatísticas Principais -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="card p-6 text-center">
+            <div class="text-3xl font-bold text-blue-600 mb-2" id="totalCount">0</div>
+            <div class="text-sm text-gray-600">Total Analisadas</div>
+            <div class="text-xs text-gray-500 mt-1" id="totalChange">+0% esta semana</div>
+        </div>
+        
+        <div class="card p-6 text-center">
+            <div class="text-3xl font-bold text-green-600 mb-2" id="legalCount">0</div>
+            <div class="text-sm text-gray-600">Embarcações Legais</div>
+            <div class="text-xs text-gray-500 mt-1" id="legalChange">+0% esta semana</div>
+        </div>
+        
+        <div class="card p-6 text-center">
+            <div class="text-3xl font-bold text-red-600 mb-2" id="illegalCount">0</div>
+            <div class="text-sm text-gray-600">Embarcações Ilegais</div>
+            <div class="text-xs text-gray-500 mt-1" id="illegalChange">+0% esta semana</div>
+        </div>
+        
+        <div class="card p-6 text-center">
+            <div class="text-3xl font-bold text-purple-600 mb-2" id="accuracyRate">0%</div>
+            <div class="text-sm text-gray-600">Taxa de Precisão</div>
+            <div class="text-xs text-gray-500 mt-1" id="accuracyChange">+0% esta semana</div>
+        </div>
+    </div>
+    
+    <!-- Gráficos -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Gráfico de Distribuição -->
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Distribuição de Legalidade</h3>
+                <select id="distributionPeriod" class="text-sm border rounded px-2 py-1">
+                    <option value="7">Últimos 7 dias</option>
+                    <option value="30" selected>Últimos 30 dias</option>
+                    <option value="90">Últimos 3 meses</option>
+                </select>
+            </div>
+            
+            <!-- Container do gráfico de pizza -->
+            <div class="h-64 flex items-center justify-center" id="pieChartContainer">
+                <div class="relative w-48 h-48">
+                    <!-- Gráfico de pizza SVG -->
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#e5e7eb" stroke-width="8"/>
+                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#10b981" stroke-width="8" 
+                                stroke-dasharray="0 251.2" stroke-linecap="round" id="legalArc"/>
+                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#ef4444" stroke-width="8" 
+                                stroke-dasharray="0 251.2" stroke-linecap="round" id="illegalArc"/>
+                    </svg>
+                    
+                    <!-- Texto central -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gray-900" id="totalPercentage">0%</div>
+                            <div class="text-xs text-gray-500">Legalidade</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Legenda do gráfico -->
+            <div class="grid grid-cols-2 gap-4 mt-4 text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span>Legais (<span id="legalPercent">0%</span>)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <span>Ilegais (<span id="illegalPercent">0%</span>)</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráfico de Tendência Temporal -->
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Tendência Temporal</h3>
+                <select id="trendPeriod" class="text-sm border rounded px-2 py-1">
+                    <option value="7">Últimos 7 dias</option>
+                    <option value="30" selected>Últimos 30 dias</option>
+                    <option value="90">Últimos 3 meses</option>
+                </select>
+            </div>
+            
+            <!-- Container do gráfico de linha -->
+            <div class="h-64" id="lineChartContainer">
+                <canvas id="trendChart" class="w-full h-full"></canvas>
+            </div>
+            
+            <!-- Estatísticas do período -->
+            <div class="grid grid-cols-3 gap-4 mt-4 text-center text-xs">
+                <div>
+                    <div class="font-medium text-gray-900" id="avgDaily">0</div>
+                    <div class="text-gray-500">Média diária</div>
+                </div>
+                <div>
+                    <div class="font-medium text-gray-900" id="peakDay">-</div>
+                    <div class="text-gray-500">Dia de pico</div>
+                </div>
+                <div>
+                    <div class="font-medium text-gray-900" id="trendDirection">-</div>
+                    <div class="text-gray-500">Tendência</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mapa de Calor por Região -->
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Atividade por Região</h3>
+                <button class="text-sm text-blue-600 hover:text-blue-700" onclick="ARITANA.Statistics.refreshHeatmap()">
+                    <i data-lucide="refresh-cw" class="h-3 w-3 inline mr-1"></i>
+                    Atualizar
+                </button>
+            </div>
+            
+            <!-- Lista de regiões com barras de atividade -->
+            <div class="space-y-3" id="regionActivity">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Estuário Central</span>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-24 bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 75%"></div>
+                        </div>
+                        <span class="text-xs text-gray-500">45</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Norte do Pará</span>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-24 bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 60%"></div>
+                        </div>
+                        <span class="text-xs text-gray-500">36</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Sul do Estuário</span>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-24 bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 40%"></div>
+                        </div>
+                        <span class="text-xs text-gray-500">24</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Região Leste</span>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-24 bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 30%"></div>
+                        </div>
+                        <span class="text-xs text-gray-500">18</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Análise de Desempenho do Sistema -->
+        <div class="card p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Desempenho do Sistema</h3>
+            
+            <div class="space-y-4">
+                <!-- Tempo médio de processamento -->
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Tempo médio de processamento</span>
+                    <span class="text-sm font-medium" id="avgProcessingTime">2.3s</span>
+                </div>
+                
+                <!-- Taxa de sucesso -->
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Taxa de sucesso</span>
+                    <span class="text-sm font-medium text-green-600" id="successRate">98.5%</span>
+                </div>
+                
+                <!-- Confiança média -->
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Confiança média</span>
+                    <span class="text-sm font-medium" id="avgConfidence">89.2%</span>
+                </div>
+                
+                <!-- Uptime do sistema -->
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Uptime do sistema</span>
+                    <span class="text-sm font-medium text-green-600" id="systemUptime">99.9%</span>
+                </div>
+            </div>
+            
+            <!-- Gráfico de barras de desempenho -->
+            <div class="mt-4 pt-4 border-t">
+                <div class="text-sm font-medium text-gray-900 mb-2">Análises por hora (últimas 24h)</div>
+                <div class="flex items-end space-x-1 h-16" id="hourlyChart">
+                    <!-- Barras serão geradas dinamicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Exportação de Dados -->
+    <div class="mt-8 card p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">Exportar Dados</h3>
+                <p class="text-sm text-gray-600">Baixe relatórios detalhados dos dados de monitoramento</p>
+            </div>
+            
+            <div class="flex space-x-2">
+                <button class="btn-secondary text-sm" onclick="ARITANA.Statistics.exportPDF()">
+                    <i data-lucide="file-text" class="h-4 w-4 inline mr-2"></i>
+                    PDF
+                </button>
+                <button class="btn-secondary text-sm" onclick="ARITANA.Statistics.exportCSV()">
+                    <i data-lucide="table" class="h-4 w-4 inline mr-2"></i>
+                    CSV
+                </button>
+                <button class="btn-primary text-sm" onclick="ARITANA.Statistics.exportExcel()">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4 inline mr-2"></i>
+                    Excel
+                </button>
+            </div>
+        </div>
+    </div>
+</div> 

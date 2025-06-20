@@ -1,0 +1,114 @@
+<!-- Componente de Resultados da Análise -->
+<div id="resultsSection" class="card p-6 hidden">
+    <div class="flex items-center space-x-2 mb-4">
+        <i data-lucide="check-circle" class="h-5 w-5 text-gray-600"></i>
+        <h2 class="text-lg font-semibold text-gray-900">Resultados da Análise</h2>
+        <span class="badge-success text-xs" id="analysisId"></span>
+    </div>
+    
+    <div class="space-y-4">
+        <!-- Status da Embarcação -->
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0">
+                    <i data-lucide="flag" class="h-5 w-5 text-gray-600" id="statusIcon"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-900">Status da Embarcação</p>
+                    <p class="text-xs text-gray-500">Classificação baseada na análise de IA</p>
+                </div>
+            </div>
+            <span id="statusBadge" class="badge-success">Legal</span>
+        </div>
+        
+        <!-- Probabilidade -->
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0">
+                    <i data-lucide="percent" class="h-5 w-5 text-gray-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-900">Confiança da Análise</p>
+                    <p class="text-xs text-gray-500">Nível de certeza do modelo de IA</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span id="probabilityValue" class="text-lg font-bold text-gray-900">95%</span>
+                <div class="w-20 bg-gray-200 rounded-full h-2 mt-1">
+                    <div id="probabilityBar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 95%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Localização Detectada -->
+        <div id="locationInfo" class="p-4 bg-gray-50 rounded-lg">
+            <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0">
+                    <i data-lucide="map-pin" class="h-5 w-5 text-gray-600"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900 mb-1">Localização Detectada</p>
+                    <p class="text-xs text-gray-500 mb-2" id="coordinates">Lat: -1.4558, Lon: -48.5034</p>
+                    <button 
+                        class="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                        onclick="ARITANA.Map.centerOnLocation()"
+                    >
+                        <i data-lucide="external-link" class="h-3 w-3 inline mr-1"></i>
+                        Ver no mapa
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detalhes Técnicos (expandível) -->
+        <div class="border rounded-lg">
+            <button 
+                class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                onclick="ARITANA.UI.toggleDetails()"
+                id="toggleDetailsBtn"
+            >
+                <span class="text-sm font-medium text-gray-900">Detalhes Técnicos</span>
+                <i data-lucide="chevron-down" class="h-4 w-4 text-gray-500 transition-transform" id="chevronIcon"></i>
+            </button>
+            
+            <div id="technicalDetails" class="hidden border-t px-4 py-3 bg-gray-50">
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <p class="text-gray-500">Modelo de IA:</p>
+                        <p class="font-medium" id="aiModel">YOLOv8</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Tempo de Processamento:</p>
+                        <p class="font-medium" id="processingTime">2.3s</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Data da Análise:</p>
+                        <p class="font-medium" id="analysisDate">-</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">ID da Análise:</p>
+                        <p class="font-medium" id="analysisIdDetail">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ações -->
+        <div class="flex space-x-2 pt-2">
+            <button 
+                class="btn-primary flex-1"
+                onclick="ARITANA.Results.downloadReport()"
+            >
+                <i data-lucide="download" class="h-4 w-4 inline mr-2"></i>
+                Baixar Relatório
+            </button>
+            <button 
+                class="btn-secondary flex-1"
+                onclick="ARITANA.Upload.reset()"
+            >
+                <i data-lucide="refresh-cw" class="h-4 w-4 inline mr-2"></i>
+                Nova Análise
+            </button>
+        </div>
+    </div>
+</div> 

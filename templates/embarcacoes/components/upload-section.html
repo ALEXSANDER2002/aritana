@@ -1,0 +1,72 @@
+<!-- Componente de Upload de Imagem -->
+<div class="border border-gray-200 rounded-lg shadow-sm bg-white" id="uploadComponent">
+    <!-- Título da Seção -->
+    <div class="px-6 py-4 border-b border-gray-100">
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                <i data-lucide="upload" class="h-4 w-4 text-gray-500"></i>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-900">Upload de Imagem</h2>
+        </div>
+        <p class="text-sm text-gray-600 mt-2 ml-11">Envie uma foto de embarcação para análise de legalidade</p>
+    </div>
+    
+    <!-- Conteúdo da Seção -->
+    <div class="p-6">
+        <!-- Área de Upload -->
+        <div class="upload-area border-2 border-dashed border-gray-300 rounded-lg p-16 text-center hover:border-gray-400 transition-colors cursor-pointer" id="uploadArea">
+            <div id="uploadContent">
+                <div class="mb-6">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="upload" class="h-8 w-8 text-gray-400"></i>
+                    </div>
+                </div>
+                <p class="text-lg font-medium text-gray-900 mb-2">Clique para enviar ou arraste uma imagem</p>
+                <p class="text-sm text-gray-500">PNG, JPG, JPEG são 10MB</p>
+            </div>
+            
+            <!-- Estado de Carregamento -->
+            <div id="uploadLoading" class="hidden">
+                <div class="spinner spinner-lg mx-auto mb-4"></div>
+                <p class="text-lg font-medium text-gray-900">Analisando imagem...</p>
+                <p class="text-sm text-gray-500">Por favor, aguarde</p>
+                <div class="mt-4">
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" id="progressBar" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 text-center" id="progressText">Preparando análise...</p>
+                </div>
+            </div>
+            
+            <!-- Estado de Erro -->
+            <div id="uploadError" class="hidden">
+                <i data-lucide="alert-circle" class="h-12 w-12 text-red-400 mx-auto mb-4"></i>
+                <p class="text-lg font-medium text-red-900 mb-2">Erro no upload</p>
+                <p class="text-sm text-red-600 mb-4" id="errorMessage">Ocorreu um erro inesperado</p>
+                <button type="button" class="btn-secondary" onclick="ARITANA.Upload.reset()">
+                    Tentar Novamente
+                </button>
+            </div>
+        </div>
+        
+        <!-- Input oculto para arquivos -->
+        <input type="file" id="fileInput" class="hidden" accept=".png,.jpg,.jpeg" />
+        
+        <!-- Preview da imagem -->
+        <div id="imagePreview" class="hidden mt-6">
+            <div class="relative">
+                <img id="previewImg" class="max-w-full h-48 object-cover rounded-lg border mx-auto" />
+                <button 
+                    class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
+                    onclick="ARITANA.Upload.removeImage()"
+                    title="Remover imagem"
+                >
+                    <i data-lucide="x" class="h-4 w-4"></i>
+                </button>
+            </div>
+            <div class="mt-2 text-center">
+                <p class="text-sm text-gray-600" id="imageInfo">Imagem carregada</p>
+            </div>
+        </div>
+    </div>
+</div> 

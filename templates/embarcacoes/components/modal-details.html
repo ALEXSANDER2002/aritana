@@ -1,0 +1,168 @@
+<!-- Modal de Detalhes da Análise -->
+<div id="detailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+            
+            <!-- Header do Modal -->
+            <div class="flex items-center justify-between p-6 border-b">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Detalhes da Análise</h3>
+                    <p class="text-sm text-gray-500" id="modalAnalysisId">ID: #000</p>
+                </div>
+                <button 
+                    class="text-gray-400 hover:text-gray-600"
+                    onclick="ARITANA.UI.closeModal()"
+                >
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            
+            <!-- Conteúdo do Modal -->
+            <div class="p-6 space-y-6">
+                
+                <!-- Imagem e Status -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Imagem Original -->
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-900 mb-2">Imagem Original</h4>
+                        <img 
+                            id="modalImage" 
+                            class="w-full h-48 object-cover rounded-lg border"
+                            src="" 
+                            alt="Imagem da embarcação"
+                        />
+                        <div class="mt-2 text-xs text-gray-500" id="modalImageInfo">
+                            <!-- Info da imagem -->
+                        </div>
+                    </div>
+                    
+                    <!-- Resultados da Análise -->
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 mb-2">Resultado da Classificação</h4>
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm">Status:</span>
+                                    <span id="modalStatus" class="badge-success">Legal</span>
+                                </div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm">Confiança:</span>
+                                    <span id="modalConfidence" class="font-medium">95%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">Modelo:</span>
+                                    <span id="modalModel" class="text-xs text-gray-600">YOLOv8</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 mb-2">Localização</h4>
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm">Coordenadas:</span>
+                                    <span id="modalCoordinates" class="text-xs font-mono">-1.4558, -48.5034</span>
+                                </div>
+                                <button 
+                                    class="w-full text-xs text-blue-600 hover:text-blue-700 font-medium mt-2"
+                                    onclick="ARITANA.Modal.showOnMap()"
+                                >
+                                    <i data-lucide="map-pin" class="h-3 w-3 inline mr-1"></i>
+                                    Ver no mapa
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Linha do Tempo -->
+                <div>
+                    <h4 class="text-sm font-medium text-gray-900 mb-3">Histórico da Análise</h4>
+                    <div class="space-y-3" id="modalTimeline">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">Upload da imagem</p>
+                                <p class="text-xs text-gray-500" id="uploadTime">2024-01-15 14:30:00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">Processamento iniciado</p>
+                                <p class="text-xs text-gray-500" id="processingStartTime">2024-01-15 14:30:02</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">Análise concluída</p>
+                                <p class="text-xs text-gray-500" id="completionTime">2024-01-15 14:30:05</p>
+                                <p class="text-xs text-gray-400">Tempo total: <span id="totalProcessingTime">3.2s</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dados Técnicos Detalhados -->
+                <div>
+                    <h4 class="text-sm font-medium text-gray-900 mb-3">Dados Técnicos</h4>
+                    <div class="grid grid-cols-2 gap-4 text-xs">
+                        <div class="p-3 bg-gray-50 rounded">
+                            <p class="text-gray-600">Resolução da Imagem</p>
+                            <p class="font-medium" id="imageResolution">1920x1080</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded">
+                            <p class="text-gray-600">Tamanho do Arquivo</p>
+                            <p class="font-medium" id="fileSize">2.4 MB</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded">
+                            <p class="text-gray-600">Formato</p>
+                            <p class="font-medium" id="fileFormat">JPEG</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded">
+                            <p class="text-gray-600">Versão do Modelo</p>
+                            <p class="font-medium" id="modelVersion">v2.1.0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Metadados EXIF (se disponível) -->
+                <div id="exifData" class="hidden">
+                    <h4 class="text-sm font-medium text-gray-900 mb-3">Metadados da Imagem</h4>
+                    <div class="p-3 bg-gray-50 rounded text-xs">
+                        <div class="grid grid-cols-2 gap-2" id="exifDetails">
+                            <!-- Dados EXIF serão preenchidos dinamicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer do Modal -->
+            <div class="flex items-center justify-between p-6 border-t bg-gray-50">
+                <div class="text-xs text-gray-500">
+                    Última atualização: <span id="lastUpdated">há 2 minutos</span>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button 
+                        class="btn-secondary text-sm"
+                        onclick="ARITANA.Modal.downloadAnalysis()"
+                    >
+                        <i data-lucide="download" class="h-4 w-4 inline mr-2"></i>
+                        Baixar Análise
+                    </button>
+                    <button 
+                        class="btn-primary text-sm"
+                        onclick="ARITANA.UI.closeModal()"
+                    >
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

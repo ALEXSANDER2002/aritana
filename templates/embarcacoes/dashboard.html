@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - ARITANA{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Seção de Upload -->
+    <div>
+        {% include 'embarcacoes/components/upload-section.html' %}
+    </div>
+
+    <!-- Seção do Mapa -->
+    <div>
+        {% include 'embarcacoes/components/map-section.html' %}
+    </div>
+    
+    <!-- Componente de Resultados -->
+    <div>
+        {% include 'embarcacoes/components/results-section.html' %}
+    </div>
+</div>
+
+<!-- Seção de Estatísticas (inicialmente oculta) -->
+{% include 'embarcacoes/components/statistics-section.html' %}
+
+<!-- Modal de Detalhes (opcional) -->
+{% include 'embarcacoes/components/modal-details.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Dados do contexto Django para JavaScript
+    const ARITANA_DATA = {
+        urls: {
+            upload: '{% url "embarcacoes_api:upload_embarcacao" %}',
+            statistics: '{% url "embarcacoes_api:estatisticas" %}',
+            mapData: '{% url "embarcacoes_api:analises_mapa" %}'
+        },
+        csrfToken: '{{ csrf_token }}',
+        analytics: {
+            totalAnalises: {{ total_analises|default:0 }},
+            embarcacoesLegais: {{ embarcacoes_legais|default:0 }},
+            embarcacoesIlegais: {{ embarcacoes_ilegais|default:0 }}
+        },
+        mapCenter: {
+            lat: -1.4558,
+            lon: -48.5034,
+            zoom: 11
+        }
+    };
+</script>
+{% endblock %} 
