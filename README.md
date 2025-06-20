@@ -334,3 +334,181 @@ Para suporte técnico:
 
 **ARITANA** - Sistema de Identificação e Monitoramento de Embarcações  
 Desenvolvido para a região do estuário do rio Pará 🌊 
+
+## 🚀 Deploy no Render
+
+### Configuração Automática
+1. **Fork/Clone** este repositório
+2. **Conecte** ao Render (render.com)
+3. **Crie um novo Web Service** no Render
+4. **Conecte** ao seu repositório GitHub
+5. **Configure** as seguintes opções:
+   - **Runtime**: Python 3
+   - **Build Command**: `./build.sh`
+   - **Start Command**: `gunicorn aritana.wsgi:application --bind 0.0.0.0:$PORT`
+
+### Variáveis de Ambiente (Render)
+Configure as seguintes variáveis no painel do Render:
+
+```bash
+# Obrigatórias
+SECRET_KEY=sua-chave-secreta-super-segura-aqui
+DEBUG=False
+ALLOWED_HOSTS=seu-app.onrender.com
+
+# Automáticas (fornecidas pelo Render)
+DATABASE_URL=postgresql://...  # Criada automaticamente
+RENDER_EXTERNAL_HOSTNAME=seu-app.onrender.com  # Criada automaticamente
+```
+
+### Banco de Dados
+O Render criará automaticamente um banco PostgreSQL. Para conectar:
+1. **Crie** um PostgreSQL Database no Render
+2. **Copie** a URL de conexão
+3. **Configure** a variável `DATABASE_URL`
+
+### URLs de Acesso
+- **Frontend**: `https://seu-app.onrender.com/`
+- **Admin**: `https://seu-app.onrender.com/admin/`
+- **API**: `https://seu-app.onrender.com/api/`
+
+### Credenciais Padrão
+- **Usuário**: `admin`
+- **Senha**: `admin123`
+
+## 🛠️ Desenvolvimento Local
+
+### Pré-requisitos
+- Python 3.8+
+- pip
+
+### Instalação
+```bash
+# Clone o repositório
+git clone https://github.com/ALEXSANDER2002/aritana.git
+cd aritana
+
+# Instale dependências
+pip install -r requirements.txt
+
+# Configure variáveis de ambiente
+cp .env.example .env
+# Edite o .env com suas configurações
+
+# Execute migrações
+python manage.py migrate
+
+# Crie superusuário
+python manage.py createsuperuser
+
+# Popule dados de exemplo
+python manage.py populate_sample_data
+
+# Colete arquivos estáticos
+python manage.py collectstatic
+
+# Execute o servidor
+python manage.py runserver
+```
+
+### URLs Locais
+- **Frontend**: `http://localhost:8000/`
+- **Admin**: `http://localhost:8000/admin/`
+- **API**: `http://localhost:8000/api/`
+
+## 📁 Estrutura do Projeto
+
+```
+aritana/
+├── aritana/                 # Configurações Django
+├── embarcacoes/             # App principal
+├── templates/               # Templates HTML
+├── static/                  # Arquivos estáticos
+├── staticfiles/             # Arquivos coletados
+├── requirements.txt         # Dependências Python
+├── build.sh                 # Script de build (Render)
+├── render.yaml             # Configuração Render
+└── .env.example            # Exemplo variáveis ambiente
+```
+
+## 🎯 Funcionalidades
+
+### 🗺️ Dashboard Interativo
+- Mapa Leaflet com marcadores coloridos
+- Estatísticas em tempo real
+- Upload de imagens drag-and-drop
+- Resultados de análise em tempo real
+
+### 🤖 API REST
+- `/api/upload-embarcacao/` - Upload e análise
+- `/api/estatisticas-dashboard/` - Estatísticas
+- `/api/mapa/` - Dados do mapa
+
+### 🔧 Admin Django
+- Interface administrativa completa
+- Filtros avançados por status e data
+- Visualização de detalhes das análises
+
+## 🧪 Dados de Exemplo
+
+O sistema inclui 5 análises de exemplo na região de Belém:
+- **3 embarcações legais** (60% legalidade)
+- **2 embarcações irregulares** (40% irregularidade)
+- Coordenadas reais do estuário do rio Pará
+
+## 🛡️ Segurança
+
+### Produção
+- `DEBUG=False`
+- `ALLOWED_HOSTS` configurado
+- HTTPS obrigatório (HSTS)
+- Headers de segurança habilitados
+- Arquivos estáticos servidos via WhiteNoise
+
+### Desenvolvimento
+- SQLite local
+- `DEBUG=True`
+- CORS liberado para localhost
+
+## 📦 Dependências Principais
+
+- **Django 4.2+** - Framework web
+- **DRF** - Django REST Framework
+- **Pillow** - Processamento de imagens
+- **OpenCV** - Visão computacional
+- **WhiteNoise** - Servir arquivos estáticos
+- **Gunicorn** - Servidor WSGI
+- **PostgreSQL** - Banco de dados (produção)
+
+## 🌟 Tecnologias Frontend
+
+- **HTML5/CSS3** - Estrutura e estilo
+- **JavaScript ES6+** - Interatividade
+- **Leaflet.js** - Mapas interativos
+- **Charts SVG** - Gráficos customizados
+- **Design Responsivo** - Mobile-first
+
+## 📄 Licença
+
+Sistema desenvolvido para pesquisa e monitoramento ambiental na região amazônica.
+
+## 🤝 Contribuição
+
+1. **Fork** o projeto
+2. **Crie** uma branch (`git checkout -b feature/nova-funcionalidade`)
+3. **Commit** suas mudanças (`git commit -m 'Adicionar nova funcionalidade'`)
+4. **Push** para a branch (`git push origin feature/nova-funcionalidade`)
+5. **Abra** um Pull Request
+
+## 📞 Suporte
+
+- **GitHub Issues**: [Reportar problemas](https://github.com/ALEXSANDER2002/aritana/issues)
+- **Email**: admin@aritana.com
+
+---
+
+### 🏛️ Universidades Parceiras
+- **UFAL** - Universidade Federal de Alagoas
+- **UFPA** - Universidade Federal do Pará
+
+**© 2025 AmazôniaPortoSeguro - Todos os direitos reservados** 
