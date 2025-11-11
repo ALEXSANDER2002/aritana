@@ -1,0 +1,611 @@
+{% extends 'embarcacoes/base.html' %}
+{% load static %}
+
+{% block title %}Histórico - ARITANA{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos específicos para histórico - Estilo Minimalista */
+    .hero-section {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        padding: 2rem 0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .hero-section .header-title {
+        color: #1f2937;
+        font-weight: 600;
+        font-size: 1.875rem;
+    }
+    
+    .hero-section .lead {
+        color: #6b7280 !important;
+        font-size: 0.95rem;
+        font-weight: 400;
+    }
+    
+    .hero-section .lead i {
+        color: #9ca3af;
+    }
+    
+    .stats-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        text-align: center;
+        box-shadow: var(--shadow-soft);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #e5e7eb;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-medium);
+        border-color: var(--primary-color);
+    }
+    
+    .filter-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-soft);
+        transition: var(--transition);
+    }
+    
+    .filter-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        border-color: var(--primary-color);
+    }
+    
+    .table-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+    
+    .table-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        border-color: var(--primary-color);
+    }
+    
+    .table-dark {
+        background: #f9fafb;
+        color: #1f2937;
+    }
+    
+    .embarcacao-row {
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .embarcacao-row:hover {
+        background: rgba(45, 125, 210, 0.05);
+        transform: scale(1.01);
+    }
+    
+    .badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.813rem;
+    }
+    
+    .bg-success {
+        background-color: #10b981 !important;
+    }
+    
+    .bg-danger {
+        background-color: #ef4444 !important;
+    }
+    
+    .bg-secondary {
+        background-color: #6b7280 !important;
+    }
+    
+    .btn-group .btn {
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-group .btn:hover {
+        opacity: 0.9;
+    }
+    
+    .btn-action {
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .image-preview {
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-medium);
+        transition: var(--transition);
+    }
+    
+    .image-preview:hover {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-strong);
+    }
+    
+    .modal-content {
+        border: none;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-strong);
+        background: #ffffff;
+    }
+    
+    .modal-header {
+        background: #ffffff;
+        color: #1f2937;
+        border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .coords-info {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        padding: 12px;
+    }
+    
+    /* Estilo para coluna de data */
+    .text-small {
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+    
+    .text-small .mb-1 {
+        margin-bottom: 0.25rem;
+    }
+    
+    /* Garantir que a tabela não quebre o layout */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .table {
+        width: 100%;
+        min-width: 1000px;
+        table-layout: fixed;
+    }
+    
+    .table td {
+        vertical-align: middle;
+        padding: 0.75rem;
+    }
+    
+    .table td small {
+        display: inline-block;
+        white-space: nowrap;
+    }
+    
+    /* Colunas com larguras fixas - Layout otimizado */
+    .table th:nth-child(1),
+    .table td:nth-child(1) {
+        width: 6%;
+        min-width: 60px;
+    }
+    
+    .table th:nth-child(2),
+    .table td:nth-child(2) {
+        width: 20%;
+        min-width: 150px;
+    }
+    
+    .table th:nth-child(3),
+    .table td:nth-child(3) {
+        width: 12%;
+        min-width: 100px;
+        text-align: center;
+    }
+    
+    .table th:nth-child(4),
+    .table td:nth-child(4) {
+        width: 12%;
+        min-width: 100px;
+        text-align: center;
+    }
+    
+    .table th:nth-child(5),
+    .table td:nth-child(5) {
+        width: 8%;
+        min-width: 80px;
+        text-align: center;
+    }
+    
+    .table th:nth-child(6),
+    .table td:nth-child(6) {
+        width: 28%;
+        min-width: 220px;
+        padding: 8px 12px !important;
+    }
+    
+    .table th:nth-child(7),
+    .table td:nth-child(7) {
+        width: 14%;
+        min-width: 120px;
+        text-align: center;
+    }
+    
+    /* Garantir que todas as colunas sejam visíveis */
+    @media (max-width: 1200px) {
+        .table {
+            min-width: 1200px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .table {
+            font-size: 0.85rem;
+        }
+        
+        .table th,
+        .table td {
+            padding: 0.5rem;
+        }
+    }
+    
+    /* Loading spinner premium */
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.3em;
+    }
+    
+    /* Paginação - Estilo Governamental */
+    .pagination .page-link {
+        border-radius: var(--border-radius-md);
+        margin: 0 2px;
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
+    }
+    
+    .pagination .page-link:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-soft);
+    }
+    
+    .pagination .page-item.active .page-link {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+        box-shadow: var(--shadow-soft);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Hero Section Premium -->
+    <div class="col-12 mb-5">
+        <div class="hero-section text-center py-5 animate-fade-in-up">
+            <div class="container">
+                <div class="mb-3">
+                    <h1 class="header-title mb-0">Histórico de Análises</h1>
+                </div>
+                <p class="lead mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Registro completo e inteligente de todas as embarcações analisadas pelo sistema ARITANA
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Estatísticas Premium -->
+    <div class="col-12 mb-5">
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-4 col-md-6">
+                <div class="stats-card animate-fade-in-up" style="animation-delay: 0.1s;">
+                    <div class="stat-number" id="total-embarcacoes">0</div>
+                    <div class="stat-label">
+                        <i class="fas fa-ship me-2"></i>Total de Embarcações
+                    </div>
+                    <div class="stat-description">Monitoramento completo da região</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="stats-card animate-fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="stat-number" id="embarcacoes-legais">0</div>
+                    <div class="stat-label">
+                        <i class="fas fa-check-circle me-2"></i>Embarcaciones Legais
+                    </div>
+                    <div class="stat-description">Em conformidade com a legislação</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="stats-card animate-fade-in-up" style="animation-delay: 0.3s;">
+                    <div class="stat-number" id="embarcacoes-ilegais">0</div>
+                    <div class="stat-label">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Embarcaciones Ilegais
+                    </div>
+                    <div class="stat-description">Requerem atenção das autoridades</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros e Ações -->
+    <div class="col-12 mb-4">
+        <div class="card filter-card">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter text-primary me-2"></i>
+                    Filtros e Ações
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="filtro-tipo" class="form-label fw-bold">
+                            <i class="fas fa-tag me-1"></i>Tipo de Embarcação
+                        </label>
+                        <select class="form-select" id="filtro-tipo">
+                            <option value="">Todos os tipos</option>
+                            <option value="legal">✅ Legal</option>
+                            <option value="ilegal">⚠️ Ilegal</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filtro-regiao" class="form-label fw-bold">
+                            <i class="fas fa-map-marker-alt me-1"></i>Região
+                        </label>
+                        <select class="form-select" id="filtro-regiao">
+                            <option value="">Todas as regiões</option>
+                            <option value="belem_centro">Belém Centro</option>
+                            <option value="icoaraci">Icoaraci</option>
+                            <option value="outeiro">Outeiro</option>
+                            <option value="mosqueiro">Mosqueiro</option>
+                            <option value="cotijuba">Cotijuba</option>
+                            <option value="guama">Guamá</option>
+                            <option value="ananindeua">Ananindeua</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filtro-busca" class="form-label fw-bold">
+                            <i class="fas fa-search me-1"></i>Buscar
+                        </label>
+                        <input type="text" class="form-control" id="filtro-busca" placeholder="Nome ou ID da embarcação">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="btn-group w-100">
+                            <button class="btn btn-primary" onclick="filtrarEmbarcacoes()">
+                                <i class="fas fa-search me-1"></i>Filtrar
+                            </button>
+                            <a href="{% url 'exportar_csv' %}" class="btn btn-success">
+                                <i class="fas fa-download me-1"></i>CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Embarcações -->
+    <div class="col-12">
+        <div class="card table-card">
+            <div class="card-header bg-transparent border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">
+                            <i class="fas fa-list text-primary me-2"></i>
+                            Lista de Embarcações
+                        </h5>
+                        <small class="text-muted">Clique em uma embarcação para ver mais detalhes</small>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">
+                            Total: <strong id="total-count">{{ total_count }}</strong> embarcações
+                            {% if load_time %}
+                                | Carregado em <strong>{{ load_time }}s</strong>
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if embarcacoes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="tabela-embarcacoes">
+                            <thead>
+                                <tr>
+                                    <th class="border-0">
+                                        <i class="fas fa-hashtag me-1"></i>ID
+                                    </th>
+                                    <th class="border-0">
+                                        <i class="fas fa-ship me-1"></i>Embarcação
+                                    </th>
+                                    <th class="border-0">
+                                        <i class="fas fa-tag me-1"></i>Status
+                                    </th>
+                                    <th class="border-0">
+                                        <i class="fas fa-globe me-1"></i>Região
+                                    </th>
+                                    <th class="border-0">
+                                        <i class="fas fa-calendar me-1"></i>Data
+                                    </th>
+                                    <th class="border-0">
+                                        <i class="fas fa-cogs me-1"></i>Ações
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Dados serão carregados dinamicamente via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Paginação -->
+                    <div class="card-footer bg-transparent border-0">
+                        <nav aria-label="Navegação de páginas">
+                            <ul class="pagination justify-content-center mb-0">
+                                <!-- Paginação será gerada dinamicamente -->
+                            </ul>
+                        </nav>
+                        
+                        <div class="text-center mt-2">
+                            <small class="text-muted">
+                                Página <span id="current-page">1</span> de <span id="total-pages">1</span>
+                                (<span id="page-info">0 a 0 de 0 embarcações</span>)
+                            </small>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="empty-state">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhuma embarcação encontrada</h5>
+                            <p class="text-muted">Não há dados disponíveis no momento.</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalhes -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-ship me-2"></i>Detalhes da Embarcação
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Conteúdo será carregado via JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Imagem -->
+<div class="modal fade" id="modalImagem" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #ffffff; border-bottom: 1px solid #e5e7eb;">
+                <h5 class="modal-title" style="color: #1f2937; font-weight: 600;">
+                    <i class="fas fa-image me-2" style="color: #6b7280;"></i>Imagem da Embarcação
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" style="background: #f9fafb; padding: 2rem;">
+                <img id="imagem-embarcacao" src="" alt="Imagem da Embarcação" 
+                     class="img-fluid rounded" 
+                     style="max-height: 70vh; width: auto; display: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border: 1px solid #e5e7eb;">
+                <div class="mt-4 p-3" style="background: #ffffff; border-radius: 8px; border: 1px solid #e5e7eb;">
+                    <p class="mb-3" id="imagem-titulo" style="color: #374151;"></p>
+                    <a id="link-imagem-original" href="" target="_blank" 
+                       class="btn btn-sm" 
+                       style="background: #1f2937; border: none; color: #ffffff; padding: 0.5rem 1rem; border-radius: 6px;">
+                        <i class="fas fa-external-link-alt me-1"></i>Abrir em Nova Aba
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer" style="background: #ffffff; border-top: 1px solid #e5e7eb;">
+                <button type="button" class="btn btn-sm" data-bs-dismiss="modal"
+                        style="background: #f3f4f6; border: 1px solid #d1d5db; color: #374151; padding: 0.5rem 1rem; border-radius: 6px;">
+                    <i class="fas fa-times me-1"></i>Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Mapa -->
+<div class="modal fade" id="modalMapa" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-map-marker-alt me-2"></i>Localização no Mapa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-map" style="height: 500px; border-radius: 10px;"></div>
+                <div class="mt-3 text-center">
+                    <p class="text-muted" id="coordenadas-info"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Sistema de processamento assíncrono -->
+<script src="{% static 'js/async-processing.js' %}?v={{ timestamp }}"></script>
+<script src="{% static 'js/historico-optimized.js' %}?v={{ timestamp }}"></script>
+<script>
+// Forçar limpeza do cache e recarregar dados
+document.addEventListener('DOMContentLoaded', function() {
+    // Limpar cache do localStorage
+    if (typeof localCache !== 'undefined') {
+        localCache.clear();
+    }
+    console.log('Cache limpo - recarregando dados...');
+    
+    // Verificar se a tabela tem 7 colunas
+    setTimeout(function() {
+        const headerCells = document.querySelectorAll('#tabela-embarcacoes thead th');
+        const bodyCells = document.querySelectorAll('#tabela-embarcacoes tbody tr:first-child td');
+        
+        console.log(`Cabeçalhos: ${headerCells.length} colunas`);
+        console.log(`Dados: ${bodyCells.length} colunas`);
+        
+        if (headerCells.length === 7 && bodyCells.length !== 7) {
+            console.warn('⚠️ Número de colunas não bate! Forçando recarga...');
+            if (typeof localCache !== 'undefined') {
+                localCache.clear();
+            }
+            location.reload(true);
+        }
+    }, 2000);
+});
+</script>
+{% endblock %}

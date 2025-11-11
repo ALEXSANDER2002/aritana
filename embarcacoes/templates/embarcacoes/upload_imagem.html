@@ -1,0 +1,730 @@
+{% extends 'embarcacoes/base.html' %}
+{% load static %}
+
+{% block title %}Upload de Imagem - ARITANA{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .upload-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 3rem 2rem;
+        text-align: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        background: #f9fafb;
+    }
+    
+    .upload-area:hover {
+        border-color: #9ca3af;
+        background: #f3f4f6;
+    }
+    
+    .upload-area.dragover {
+        border-color: #6b7280;
+        background: #e5e7eb;
+        border-style: solid;
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+        transition: color 0.2s ease;
+    }
+    
+    .upload-area:hover .upload-icon {
+        color: #9ca3af;
+    }
+    
+    .upload-text {
+        color: #6b7280;
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+    
+    .upload-info {
+        font-size: 0.875rem;
+        color: #9ca3af;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        padding: 0.625rem 0.875rem;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+    }
+    
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #6b7280;
+        box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
+        outline: none;
+    }
+    
+    .form-control:required:invalid,
+    .form-select:required:invalid {
+        border-color: #d1d5db;
+    }
+    
+    .form-control:required:valid,
+    .form-select:required:valid {
+        border-color: #d1d5db;
+    }
+    
+    .text-danger {
+        color: #dc2626 !important;
+    }
+    
+    .form-select {
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        padding: 0.625rem 0.875rem;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+    }
+    
+    .btn-upload {
+        background: #1f2937;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        color: #ffffff;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-upload:hover {
+        background: #374151;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(31, 41, 55, 0.15);
+    }
+    
+    .btn-upload:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        background: #9ca3af;
+    }
+    
+    .progress-container {
+        margin-top: 2rem;
+        display: none;
+    }
+    
+    .progress {
+        height: 6px;
+        border-radius: 6px;
+        background: #e5e7eb;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        background: #1f2937;
+        transition: width 0.3s ease;
+    }
+    
+    .status-message {
+        margin-top: 1rem;
+        padding: 0.875rem 1rem;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+    
+    .status-processing {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+    
+    .status-success {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #86efac;
+    }
+    
+    .status-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+    }
+    
+    .job-info {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        font-family: 'SF Mono', 'Courier New', monospace;
+        font-size: 0.813rem;
+    }
+    
+    .preview-image {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 8px;
+        margin-top: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e5e7eb;
+    }
+    
+    @media (max-width: 768px) {
+        .upload-container {
+            padding: 1rem;
+        }
+        
+        .upload-card {
+            padding: 1.5rem;
+        }
+        
+        .upload-area {
+            padding: 2rem 1rem;
+        }
+        
+        .upload-icon {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <!-- Cabeçalho Minimalista -->
+    <div class="mb-4 text-center">
+        <h1 style="color: #1f2937; font-weight: 600; font-size: 1.75rem; margin-bottom: 0.5rem;">
+            Upload de Imagem
+        </h1>
+        <p style="color: #6b7280; font-size: 0.875rem; margin: 0;">
+            Envie uma imagem de embarcação para análise com IA
+        </p>
+    </div>
+    
+    <div class="upload-card">
+        
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Área de Upload -->
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">
+                    <strong>Clique aqui ou arraste uma imagem</strong>
+                </div>
+                <div class="upload-info">
+                    Formatos aceitos: JPG, PNG, JPEG<br>
+                    Tamanho máximo: 20MB
+                </div>
+                <input type="file" id="imageInput" name="imagem" accept="image/*" style="display: none;">
+            </div>
+            
+            <!-- Preview da Imagem -->
+            <div id="imagePreview" style="display: none;">
+                <img id="previewImg" class="preview-image" alt="Preview">
+                <div class="text-center mt-2">
+                    <button type="button" class="btn btn-sm" onclick="removeImage()" 
+                            style="background: #f3f4f6; border: 1px solid #d1d5db; color: #374151; border-radius: 6px; padding: 0.375rem 0.75rem; font-size: 0.813rem;">
+                        <i class="fas fa-trash me-1"></i> Remover
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Separador Visual -->
+            <hr class="my-4" style="border-top: 1px solid #e5e7eb;">
+            
+            <!-- Campos de Localização (Obrigatórios) -->
+            <div class="mb-3" style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.875rem 1rem; font-size: 0.875rem;">
+                <i class="fas fa-map-marker-alt me-2" style="color: #6b7280;"></i>
+                <strong style="color: #374151;">Localização em Belém</strong> <span style="color: #6b7280;">- Selecione a região da embarcação</span>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="regiao" class="form-label">
+                            Região de Belém <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select form-select-lg" id="regiao" name="regiao" required>
+                            <option value="">Selecione a região...</option>
+                            <option value="Centro">Centro de Belém</option>
+                            <option value="Comércio">Comércio</option>
+                            <option value="Cidade Velha">Cidade Velha</option>
+                            <option value="Reduto">Reduto</option>
+                            <option value="Campina">Campina</option>
+                            <option value="Umarizal">Umarizal</option>
+                            <option value="Nazaré">Nazaré</option>
+                            <option value="Cremação">Cremação</option>
+                            <option value="Jurunas">Jurunas</option>
+                            <option value="Condor">Condor</option>
+                            <option value="Guamá">Guamá</option>
+                            <option value="Terra Firme">Terra Firme</option>
+                            <option value="Marco">Marco</option>
+                            <option value="Pedreira">Pedreira</option>
+                            <option value="Telégrafo">Telégrafo</option>
+                            <option value="Sacramenta">Sacramenta</option>
+                            <option value="Val-de-Cans">Val-de-Cans</option>
+                            <option value="Icoaraci">Icoaraci</option>
+                            <option value="Mosqueiro">Mosqueiro</option>
+                            <option value="Outeiro">Outeiro</option>
+                            <option value="Cotijuba">Cotijuba</option>
+                            <option value="Ver-o-Peso">Ver-o-Peso (Porto)</option>
+                            <option value="Baía do Guajará">Baía do Guajará</option>
+                            <option value="Outra">Outra Região</option>
+                        </select>
+                        <small class="text-muted">Selecione a região de Belém onde a embarcação foi avistada</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Campo de Localidade (Aparece se selecionar "Outra") -->
+            <div class="row mt-3" id="localidadeOutraContainer" style="display: none;">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="localidade" class="form-label">
+                            Especifique a Localidade <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="localidade" name="localidade" 
+                               placeholder="Digite a localidade específica">
+                        <small class="text-muted">Descreva a localidade com mais detalhes</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Campos de Coordenadas (Opcionais) -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="latitude" class="form-label">
+                            Latitude (opcional)
+                            <i class="fas fa-info-circle ms-1" data-bs-toggle="tooltip" 
+                               title="Formato decimal, ex: -1.4558" style="color: #9ca3af; font-size: 0.75rem;"></i>
+                        </label>
+                        <input type="number" step="0.000001" class="form-control" id="latitude" name="latitude" 
+                               placeholder="Ex: -1.4558">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="longitude" class="form-label">
+                            Longitude (opcional)
+                            <i class="fas fa-info-circle ms-1" data-bs-toggle="tooltip" 
+                               title="Formato decimal, ex: -48.5044" style="color: #9ca3af; font-size: 0.75rem;"></i>
+                        </label>
+                        <input type="number" step="0.000001" class="form-control" id="longitude" name="longitude" 
+                               placeholder="Ex: -48.5044">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Campos de Informação -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="titulo" class="form-label">Título (opcional)</label>
+                        <input type="text" class="form-control" id="titulo" name="titulo" 
+                               placeholder="Ex: Embarcação suspeita no porto">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="descricao" class="form-label">Descrição (opcional)</label>
+                        <input type="text" class="form-control" id="descricao" name="descricao" 
+                               placeholder="Ex: Detalhes sobre a embarcação">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botão de Upload -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-upload" id="uploadBtn" disabled>
+                    <i class="fas fa-upload me-2"></i>
+                    Enviar para Análise
+                </button>
+            </div>
+        </form>
+        
+        <!-- Progresso do Upload -->
+        <div class="progress-container" id="progressContainer" {% if job_id %}style="display: block;"{% endif %}>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar" role="progressbar" style="width: {% if job_id %}10{% else %}0{% endif %}%"></div>
+            </div>
+            <div class="status-message" id="statusMessage" {% if job_id %}class="status-message status-processing"{% endif %}>
+                {% if job_id %}
+                    Imagem enviada com sucesso! Job ID: {{ job_id }}
+                {% endif %}
+            </div>
+            <div class="job-info" id="jobInfo" {% if job_id %}style="display: block;"{% endif %}>
+                {% if job_id %}
+                    <strong>Job ID:</strong> {{ job_id }}<br>
+                    <strong>Status:</strong> Processando<br>
+                    <strong>Progresso:</strong> <span id="progress-text">10%</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Área de Resultado -->
+    <div id="resultArea" class="upload-card" style="display: none;">
+        <h3 style="color: #1f2937; font-weight: 600; margin-bottom: 1.5rem;">
+            <i class="fas fa-check-circle text-success me-2"></i>Resultado do Processamento
+        </h3>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <h5 style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem;">
+                    Imagem Original
+                </h5>
+                <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                    <img id="resultOriginalImg" src="" alt="Original" style="width: 100%; height: auto;">
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <h5 style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem;">
+                    Imagem Processada (YOLO)
+                </h5>
+                <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                    <img id="resultProcessedImg" src="" alt="Processada" style="width: 100%; height: auto;">
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-3" id="resultDetails" style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem;">
+            <!-- Detalhes serão inseridos aqui -->
+        </div>
+        
+        <div class="mt-3 text-center">
+            <button onclick="window.location.href='/historico/'" class="btn btn-primary me-2"
+                    style="background: #1f2937; border: none; border-radius: 6px; padding: 0.5rem 1.5rem;">
+                <i class="fas fa-list me-2"></i>Ver Histórico Completo
+            </button>
+            <button onclick="window.location.reload()" class="btn btn-outline-secondary"
+                    style="border-radius: 6px; padding: 0.5rem 1.5rem;">
+                <i class="fas fa-upload me-2"></i>Fazer Novo Upload
+            </button>
+        </div>
+    </div>
+    
+    <!-- Informações sobre o Processamento -->
+    <div class="upload-card" id="infoCard">
+        <h4 class="mb-3" style="color: #374151; font-weight: 600; font-size: 1.125rem;">
+            <i class="fas fa-info-circle me-2" style="color: #9ca3af;"></i>
+            Como Funciona o Processamento
+        </h4>
+        <div class="row">
+            <div class="col-md-4 text-center mb-3">
+                <div style="font-size: 2rem; color: #d1d5db; margin-bottom: 0.75rem;">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <h6 style="color: #1f2937; font-weight: 500; font-size: 0.875rem;">1. Upload</h6>
+                <p class="small" style="color: #6b7280; font-size: 0.813rem;">Envie sua imagem para análise</p>
+            </div>
+            <div class="col-md-4 text-center mb-3">
+                <div style="font-size: 2rem; color: #d1d5db; margin-bottom: 0.75rem;">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h6 style="color: #1f2937; font-weight: 500; font-size: 0.875rem;">2. Processamento</h6>
+                <p class="small" style="color: #6b7280; font-size: 0.813rem;">IA YOLO analisa a imagem</p>
+            </div>
+            <div class="col-md-4 text-center mb-3">
+                <div style="font-size: 2rem; color: #d1d5db; margin-bottom: 0.75rem;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h6 style="color: #1f2937; font-weight: 500; font-size: 0.875rem;">3. Resultado</h6>
+                <p class="small" style="color: #6b7280; font-size: 0.813rem;">Receba a classificação</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Configurações específicas da página de upload
+document.addEventListener('DOMContentLoaded', function() {
+    // Aguardar um pouco para garantir que o async-processing.js foi carregado
+    setTimeout(function() {
+        // Verificar se o sistema de processamento assíncrono está disponível
+        if (window.asyncProcessor && window.imageUploader) {
+            console.log('Sistema de processamento assíncrono carregado na página de upload');
+            
+            // Inicializar o uploader se ainda não foi inicializado
+            if (!window.imageUploader.uploadArea) {
+                window.imageUploader.init(
+                    'uploadArea',
+                    'imageInput',
+                    'imagePreview',
+                    'progressContainer',
+                    'statusMessage',
+                    'uploadBtn'
+                );
+                console.log('ImageUploader inicializado');
+            }
+            
+            // Adicionar listener para jobs existentes na página
+            const existingJobs = document.querySelectorAll('[data-job-id]');
+            existingJobs.forEach(element => {
+                const jobId = element.getAttribute('data-job-id');
+                if (jobId) {
+                    window.asyncProcessor.addJob(jobId, {
+                        onProgress: (data, job) => {
+                            console.log(`Job ${jobId} progress: ${data.progresso}%`);
+                        },
+                        onSuccess: (data, job) => {
+                            console.log(`Job ${jobId} completed successfully`);
+                            // Atualizar UI se necessário
+                        },
+                        onError: (error, job) => {
+                            console.error(`Job ${jobId} failed:`, error);
+                        }
+                    });
+                }
+            });
+        } else {
+            console.warn('Sistema de processamento assíncrono não disponível');
+        }
+        
+        // Função para remover imagem (compatibilidade com template)
+        window.removeImage = function() {
+            if (window.imageUploader) {
+                window.imageUploader.removeImage();
+            }
+        };
+        
+        // Inicializar tooltips do Bootstrap
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Controlar exibição do campo "Outra Localidade"
+        const regiaoSelect = document.getElementById('regiao');
+        const localidadeOutraContainer = document.getElementById('localidadeOutraContainer');
+        const localidadeInput = document.getElementById('localidade');
+        
+        if (regiaoSelect) {
+            regiaoSelect.addEventListener('change', function() {
+                const regiao = this.value;
+                
+                // Mostrar campo de localidade apenas se selecionar "Outra"
+                if (regiao === 'Outra') {
+                    localidadeOutraContainer.style.display = 'block';
+                    if (localidadeInput) {
+                        localidadeInput.required = true;
+                    }
+                } else {
+                    localidadeOutraContainer.style.display = 'none';
+                    if (localidadeInput) {
+                        localidadeInput.required = false;
+                        localidadeInput.value = '';
+                    }
+                }
+                
+                validarFormulario();
+            });
+        }
+        
+        if (localidadeInput) {
+            localidadeInput.addEventListener('input', validarFormulario);
+        }
+        
+        // Validar formulário para habilitar/desabilitar botão
+        function validarFormulario() {
+            const uploadBtn = document.getElementById('uploadBtn');
+            const imageInput = document.getElementById('imageInput');
+            const regiao = document.getElementById('regiao');
+            const localidade = document.getElementById('localidade');
+            
+            if (!uploadBtn || !imageInput || !regiao) return;
+            
+            // Verificar se imagem está selecionada E região selecionada
+            const imagemSelecionada = imageInput.files && imageInput.files.length > 0;
+            const regiaoPreenchida = regiao.value && regiao.value.trim() !== '';
+            
+            // Se região for "Outra", verificar se localidade está preenchida
+            let localidadeValida = true;
+            if (regiao.value === 'Outra' && localidade) {
+                localidadeValida = localidade.value && localidade.value.trim() !== '';
+            }
+            
+            const formularioValido = imagemSelecionada && regiaoPreenchida && localidadeValida;
+            
+            uploadBtn.disabled = !formularioValido;
+            
+            console.log('Validação:', {
+                imagem: imagemSelecionada,
+                regiao: regiaoPreenchida,
+                localidadeValida: localidadeValida,
+                valido: formularioValido
+            });
+        }
+        
+        // Validar quando imagem for selecionada
+        const imageInput = document.getElementById('imageInput');
+        if (imageInput) {
+            imageInput.addEventListener('change', validarFormulario);
+        }
+        
+        // Também validar quando evento customizado for disparado
+        window.addEventListener('imageSelected', validarFormulario);
+        
+        // Validar no carregamento inicial (região e localidade já estão preenchidos)
+        setTimeout(validarFormulario, 200);
+        
+        // Se há um job_id na página, iniciar monitoramento automático
+        {% if job_id %}
+        const currentJobId = '{{ job_id }}';
+        if (window.asyncProcessor && currentJobId) {
+            console.log(`Iniciando monitoramento do job: ${currentJobId}`);
+            
+            window.asyncProcessor.addJob(currentJobId, {
+                onProgress: (data, job) => {
+                    const progressBar = document.getElementById('progressBar');
+                    const statusMessage = document.getElementById('statusMessage');
+                    const progressText = document.getElementById('progress-text');
+                    
+                    if (progressBar) progressBar.style.width = (data.progresso || 0) + '%';
+                    if (statusMessage) statusMessage.textContent = data.mensagem || 'Processando...';
+                    if (progressText) progressText.textContent = (data.progresso || 0) + '%';
+                    
+                    console.log(`Job ${currentJobId} progress: ${data.progresso}%`);
+                },
+                onSuccess: (data, job) => {
+                    const statusMessage = document.getElementById('statusMessage');
+                    const progressText = document.getElementById('progress-text');
+                    
+                    if (statusMessage) {
+                        statusMessage.className = 'status-message status-success';
+                        statusMessage.textContent = 'Processamento concluído com sucesso!';
+                    }
+                    if (progressText) progressText.textContent = '100%';
+                    
+                    console.log(`Job ${currentJobId} completed successfully`, data);
+                    
+                    // Buscar resultado e exibir
+                    if (data.resource_id) {
+                        fetch(`/api/resultado/${data.resource_id}/`)
+                            .then(response => response.json())
+                            .then(resultado => {
+                                console.log('Resultado:', resultado);
+                                exibirResultado(resultado);
+                            })
+                            .catch(error => {
+                                console.error('Erro ao buscar resultado:', error);
+                                // Redirecionar para histórico se falhar
+                                setTimeout(() => {
+                                    window.location.href = '/historico/';
+                                }, 2000);
+                            });
+                    } else {
+                        // Redirecionar para histórico se não houver resource_id
+                        setTimeout(() => {
+                            window.location.href = '/historico/';
+                        }, 2000);
+                    }
+                },
+                onError: (error, job) => {
+                    const statusMessage = document.getElementById('statusMessage');
+                    
+                    if (statusMessage) {
+                        statusMessage.className = 'status-message status-error';
+                        statusMessage.textContent = 'Erro no processamento: ' + error.message;
+                    }
+                    
+                    console.error(`Job ${currentJobId} failed:`, error);
+                }
+            });
+        }
+        {% endif %}
+    }, 100); // Aguardar 100ms para garantir que o async-processing.js foi carregado
+});
+
+// Função para exibir resultado do processamento
+function exibirResultado(resultado) {
+    const resultArea = document.getElementById('resultArea');
+    const infoCard = document.getElementById('infoCard');
+    const progressContainer = document.getElementById('progressContainer');
+    const resultOriginalImg = document.getElementById('resultOriginalImg');
+    const resultProcessedImg = document.getElementById('resultProcessedImg');
+    const resultDetails = document.getElementById('resultDetails');
+    
+    // Ocultar card de info e progresso
+    if (infoCard) infoCard.style.display = 'none';
+    if (progressContainer) progressContainer.style.display = 'none';
+    
+    // Exibir imagens
+    if (resultOriginalImg && resultado.imagem_url) {
+        resultOriginalImg.src = resultado.imagem_url;
+    }
+    
+    if (resultProcessedImg && resultado.imagem_processada_url) {
+        resultProcessedImg.src = resultado.imagem_processada_url;
+    }
+    
+    // Exibir detalhes
+    if (resultDetails) {
+        const classificacao = resultado.classificacao || 'N/A';
+        const confianca = resultado.confianca ? Math.round(resultado.confianca) + '%' : 'N/A';
+        const badgeClass = classificacao.toLowerCase() === 'legal' ? 'bg-success' : 'bg-danger';
+        
+        resultDetails.innerHTML = `
+            <div class="row">
+                <div class="col-md-4">
+                    <strong style="color: #6b7280;">Classificação:</strong><br>
+                    <span class="badge ${badgeClass} mt-1" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                        ${classificacao}
+                    </span>
+                </div>
+                <div class="col-md-4">
+                    <strong style="color: #6b7280;">Confiança:</strong><br>
+                    <span style="color: #1f2937; font-size: 1.25rem; font-weight: 600;">${confianca}</span>
+                </div>
+                <div class="col-md-4">
+                    <strong style="color: #6b7280;">Região:</strong><br>
+                    <span style="color: #1f2937;">${resultado.regiao || 'N/A'}</span>
+                </div>
+            </div>
+            ${resultado.titulo ? `<div class="mt-2"><strong style="color: #6b7280;">Título:</strong> ${resultado.titulo}</div>` : ''}
+            ${resultado.descricao ? `<div class="mt-1"><strong style="color: #6b7280;">Descrição:</strong> ${resultado.descricao}</div>` : ''}
+        `;
+    }
+    
+    // Exibir área de resultado com animação
+    if (resultArea) {
+        resultArea.style.display = 'block';
+        resultArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+</script>
+{% endblock %}

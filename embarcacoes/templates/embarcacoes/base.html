@@ -1,0 +1,2261 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ARITANA - Sistema de Identificação e Monitoramento{% endblock %}</title>
+    
+    <!-- Bootstrap CSS Local -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" media="all">
+    <!-- Font Awesome Local -->
+    <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet" media="all">
+    <!-- Font Awesome Fix para caminhos locais -->
+    <link href="{% static 'css/font-awesome-fix.css' %}" rel="stylesheet" media="all">
+    <!-- Leaflet CSS - carregado apenas quando necessário -->
+    <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Animate.css para animações -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- Estilos Premium Personalizados -->
+    <link href="{% static 'css/premium-styles.css' %}?v=3.0" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Cores extraídas diretamente da logo ARITANA */
+            --primary-color: #2d5a4a;        /* Verde escuro/teal da borda e pin */
+            --secondary-color: #1e4a3a;      /* Verde mais escuro da vegetação */
+            --accent-color: #4a8b7a;         /* Verde água/seafoam das ondas */
+            --boat-color: #1a3d5c;          /* Azul escuro da embarcação */
+            --success-color: #2d5a4a;       /* Verde sucesso (mesmo da logo) */
+            --danger-color: #dc2626;         /* Vermelho alerta */
+            --warning-color: #d97706;        /* Laranja atenção */
+            --info-color: #4a8b7a;           /* Verde água para informação */
+            
+            /* Cores neutras inspiradas no gov.br */
+            --light-bg: #f8fafc;            /* Fundo claro */
+            --dark-bg: #0f172a;              /* Fundo escuro */
+            --text-primary: #1e293b;         /* Texto principal */
+            --text-secondary: #64748b;       /* Texto secundário */
+            --border-color: #e2e8f0;         /* Bordas */
+            
+            /* Gradientes baseados na logo ARITANA */
+            --gradient-primary: linear-gradient(135deg, #2d5a4a 0%, #4a8b7a 100%);
+            --gradient-secondary: linear-gradient(135deg, #1e4a3a 0%, #2d5a4a 100%);
+            --gradient-success: linear-gradient(135deg, #2d5a4a 0%, #1e4a3a 100%);
+            --gradient-ocean: linear-gradient(135deg, #2d5a4a 0%, #4a8b7a 50%, #1a3d5c 100%);
+            --gradient-bg: linear-gradient(135deg, #f0f9f7 0%, #e8f5f0 50%, #f0f9f7 100%);
+            
+            /* Sombras suaves inspiradas no gov.br */
+            --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-strong: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            
+            /* Bordas arredondadas moderadas (gov.br style) */
+            --border-radius: 8px;
+            --border-radius-md: 12px;
+            --border-radius-lg: 16px;
+            --border-radius-xl: 20px;
+            
+            /* Transições suaves */
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--gradient-bg);
+            background-attachment: fixed;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+            color: #2d3748;
+            overflow-x: hidden;
+        }
+
+        /* Animações globais */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200px 0;
+            }
+            100% {
+                background-position: calc(200px + 100%) 0;
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .animate-slide-in-right {
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Header Section - Estilo Governamental */
+        .header-section {
+            background: #ffffff;
+            box-shadow: var(--shadow-soft);
+            padding: 1.5rem 0;
+            border-bottom: 3px solid var(--primary-color);
+            position: relative;
+        }
+
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-ocean);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-logo {
+            height: 60px;
+            width: auto;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+            transition: var(--transition);
+        }
+
+        .header-logo:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.2));
+        }
+
+        .header-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
+            letter-spacing: -0.01em;
+            position: relative;
+        }
+
+        .header-title::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-color);
+            transition: width 0.3s ease;
+        }
+
+        .header-brand:hover .header-title::after {
+            width: 100%;
+        }
+
+        .header-nav {
+            margin: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-nav-link {
+            background: transparent !important;
+            color: var(--text-primary) !important;
+            border: 2px solid transparent;
+            border-radius: var(--border-radius-md);
+            padding: 10px 20px;
+            margin: 0 4px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            text-decoration: none;
+            position: relative;
+        }
+
+        .header-nav-link:hover {
+            color: var(--primary-color) !important;
+            border-color: var(--primary-color);
+            background: rgba(30, 58, 138, 0.05) !important;
+            transform: translateY(-1px);
+        }
+
+        .header-nav-link.active {
+            background: var(--primary-color) !important;
+            color: white !important;
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .header-nav-link i {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+
+        .header-status {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: var(--shadow-soft);
+            transition: var(--transition);
+        }
+
+        .status-indicator:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .status-indicator i {
+            font-size: 1.2rem;
+            color: var(--accent-color);
+        }
+
+        .status-text {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Cards - Estilo Governamental */
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-soft);
+            transition: var(--transition);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-ocean);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--primary-color);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.25rem 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Botões - Design System Gov.br */
+        .btn {
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 8px 16px;
+            transition: all 0.15s ease-in-out;
+            border: 1px solid transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            min-height: 40px;
+        }
+
+        .btn:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Botão Primário - Gov.br */
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #1e4a3a;
+            border-color: #1e4a3a;
+        }
+
+        .btn-primary:active {
+            background: #2d5a4a;
+            border-color: #2d5a4a;
+        }
+
+        /* Botão Secundário - Gov.br */
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border-color: #6c757d;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #5a6268;
+            border-color: #5a6268;
+        }
+
+        /* Botão Sucesso - Gov.br */
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #047857;
+            border-color: #047857;
+        }
+
+        /* Botão Perigo - Gov.br */
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #b91c1c;
+            border-color: #b91c1c;
+        }
+
+        /* Botão Outline - Gov.br */
+        .btn-outline-primary {
+            background: transparent;
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-outline-primary:hover:not(:disabled) {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-outline-secondary {
+            background: transparent;
+            color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .btn-outline-secondary:hover:not(:disabled) {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* Tamanhos de Botões - Gov.br */
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            min-height: 32px;
+        }
+
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 16px;
+            min-height: 48px;
+        }
+
+        /* Botão com Ícone - Gov.br */
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn i:only-child {
+            margin-right: 0;
+        }
+
+        /* Responsividade Mobile */
+        @media (max-width: 768px) {
+            .header-section {
+                padding: 0.8rem 0;
+            }
+
+            .header-brand {
+                justify-content: center;
+                margin-bottom: 1rem;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-logo {
+                height: 35px;
+                margin-bottom: 8px;
+            }
+
+            .header-title {
+                font-size: 1.6rem;
+                margin: 0;
+            }
+
+            .header-nav {
+                margin-bottom: 1rem;
+            }
+
+            .header-nav-link {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+                border-radius: 25px;
+                margin: 2px;
+                min-width: 120px;
+            }
+
+            .header-status {
+                justify-content: center;
+                margin-top: 1rem;
+            }
+
+            .status-indicator {
+                padding: 8px 16px;
+                border-radius: 20px;
+            }
+
+            .status-text {
+                font-size: 0.85rem;
+            }
+
+            /* Melhorias para mobile */
+            .main-container {
+                padding: 0.5rem;
+                margin: 0;
+            }
+
+            .card {
+                margin-bottom: 1rem;
+                border-radius: 12px;
+            }
+
+            .card-header {
+                padding: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .stat-card {
+                padding: 1.5rem 1rem;
+                margin-bottom: 1rem;
+                text-align: center;
+                border-radius: 12px;
+            }
+
+            .stat-number {
+                font-size: 2.2rem;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+                border-radius: 8px;
+            }
+
+            .btn-lg {
+                padding: 15px 25px;
+                font-size: 1rem;
+            }
+
+            /* Upload area mobile */
+            .upload-area {
+                padding: 2rem 1rem;
+                border-radius: 12px;
+                min-height: 150px;
+            }
+
+            .upload-placeholder {
+                text-align: center;
+            }
+
+            .upload-placeholder i {
+                font-size: 2.5rem !important;
+            }
+
+            /* Mapa mobile */
+            .map-container {
+                height: 300px !important;
+                border-radius: 8px;
+            }
+
+            /* Gráficos mobile */
+            .chart-container {
+                height: 250px !important;
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Melhor aproveitamento do espaço em desktop */
+        @media (min-width: 1200px) {
+            .chart-container {
+                height: 400px !important;
+                min-height: 350px;
+                margin-bottom: 1rem;
+            }
+            
+            .chart-container canvas {
+                max-height: none !important;
+            }
+        }
+
+        @media (min-width: 1400px) {
+            .chart-container {
+                height: 450px !important;
+                min-height: 400px;
+            }
+            
+            .chart-container canvas {
+                max-height: none !important;
+            }
+        }
+
+        /* Canvas específico para mobile */
+        @media (max-width: 768px) {
+            canvas {
+                max-height: 200px !important;
+            }
+        }
+
+        /* Estatísticas - Estilo Governamental */
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-ocean);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--primary-color);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Badges - Design System Gov.br */
+        .badge {
+            border-radius: 4px;
+            font-weight: 500;
+            padding: 4px 8px;
+            font-size: 12px;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            display: inline-block;
+        }
+
+        .badge-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .badge-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .badge-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .badge-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .badge-info {
+            background-color: var(--info-color);
+            color: white;
+        }
+
+        .badge-light {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+
+        .badge-dark {
+            background-color: #343a40;
+            color: white;
+        }
+
+        /* Badge Pill - Gov.br */
+        .badge-pill {
+            border-radius: 50px;
+            padding: 6px 12px;
+        }
+
+        /* Alertas - Design System Gov.br */
+        .alert {
+            border-radius: 4px;
+            border: 1px solid transparent;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .alert-primary {
+            background-color: rgba(30, 58, 138, 0.1);
+            border-color: rgba(30, 58, 138, 0.2);
+            color: #1e3a8a;
+        }
+
+        .alert-secondary {
+            background-color: rgba(108, 117, 125, 0.1);
+            border-color: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+        }
+
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: #059669;
+        }
+
+        .alert-danger {
+            background-color: rgba(220, 38, 38, 0.1);
+            border-color: rgba(220, 38, 38, 0.2);
+            color: #dc2626;
+        }
+
+        .alert-warning {
+            background-color: rgba(217, 119, 6, 0.1);
+            border-color: rgba(217, 119, 6, 0.2);
+            color: #d97706;
+        }
+
+        .alert-info {
+            background-color: rgba(2, 132, 199, 0.1);
+            border-color: rgba(2, 132, 199, 0.2);
+            color: #0284c7;
+        }
+
+        .alert-dismissible {
+            padding-right: 40px;
+        }
+
+        .alert-dismissible .btn-close {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 12px 16px;
+        }
+
+        /* Footer - Estilo Governamental */
+        footer {
+            background: #ffffff !important;
+            border-top: 3px solid var(--primary-color);
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-ocean);
+        }
+
+        footer .badge {
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+        }
+
+        /* Formulários - Design System Gov.br */
+        .form-control {
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            padding: 8px 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #ffffff;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            min-height: 40px;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.25);
+            outline: 0;
+        }
+
+        .form-control:disabled {
+            background-color: #e9ecef;
+            opacity: 1;
+        }
+
+        .form-control::placeholder {
+            color: #6c757d;
+            opacity: 1;
+        }
+
+        .form-select {
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            padding: 8px 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #ffffff;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            min-height: 40px;
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.25);
+            outline: 0;
+        }
+
+        .form-select:disabled {
+            background-color: #e9ecef;
+            opacity: 1;
+        }
+
+        /* Labels - Gov.br */
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        /* Form Groups - Gov.br */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        /* Form Text - Gov.br */
+        .form-text {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        /* Form Check - Gov.br */
+        .form-check-input {
+            margin-top: 0.25rem;
+            margin-right: 0.5rem;
+        }
+
+        .form-check-label {
+            font-size: 14px;
+            color: #495057;
+        }
+
+        /* Input Groups - Gov.br */
+        .input-group {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: stretch;
+            width: 100%;
+        }
+
+        .input-group-text {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #495057;
+            text-align: center;
+            white-space: nowrap;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        .input-group .form-control {
+            border-radius: 0;
+        }
+
+        .input-group .form-control:first-child {
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+
+        .input-group .form-control:last-child {
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        /* Tabelas - Design System Gov.br */
+        .table {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: #f8f9fa;
+            color: #495057;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 12px 16px;
+            text-align: left;
+            vertical-align: middle;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.15s ease-in-out;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .table tbody td {
+            padding: 12px 16px;
+            border: none;
+            vertical-align: middle;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        /* Tabela Responsiva - Gov.br */
+        .table-responsive {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .table-responsive .table {
+            border: none;
+            box-shadow: none;
+        }
+
+        /* Tabela Striped - Gov.br */
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        /* Tabela Hover - Gov.br */
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Tabela Bordered - Gov.br */
+        .table-bordered {
+            border: 1px solid #dee2e6;
+        }
+
+        .table-bordered th,
+        .table-bordered td {
+            border: 1px solid #dee2e6;
+        }
+
+        /* Tabela Condensed - Gov.br */
+        .table-sm th,
+        .table-sm td {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        /* Upload Area Premium */
+        .upload-area-premium {
+            border: 3px dashed rgba(45, 125, 210, 0.3);
+            border-radius: var(--border-radius-lg);
+            padding: 3rem 2rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(45, 125, 210, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .upload-area-premium:hover {
+            border-color: var(--secondary-color);
+            background: rgba(45, 125, 210, 0.05);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .upload-area-premium:hover::before {
+            left: 100%;
+        }
+
+        .upload-area-premium.dragover {
+            border-color: var(--accent-color);
+            background: rgba(0, 212, 170, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .upload-area-premium:hover .upload-icon {
+            transform: scale(1.1);
+            color: var(--accent-color);
+        }
+
+        .upload-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtitle {
+            color: #718096;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-info {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        /* Hero Section - Estilo Governamental */
+        .hero-section {
+            background: var(--gradient-ocean);
+            border-radius: var(--border-radius-lg);
+            color: white;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+            opacity: 0.5;
+        }
+
+        .hero-section .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Botões de Tab Premium */
+        .btn-tab-custom {
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            padding: 12px 24px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-tab-custom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-tab-custom:hover::before {
+            left: 100%;
+        }
+
+        .btn-tab-custom.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .btn-tab-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* Footer responsivo */
+        @media (max-width: 768px) {
+            footer .d-flex.justify-content-md-end {
+                justify-content: center !important;
+                margin-top: 1rem;
+            }
+            
+            footer .text-md-end {
+                text-align: center !important;
+            }
+            
+            footer .col-md-6:last-child {
+                margin-top: 1rem;
+            }
+        }
+
+            /* Tabs mobile */
+            .btn-tab-custom {
+                padding: 10px 15px;
+                font-size: 0.85rem;
+                margin: 2px;
+                min-width: 100px;
+            }
+
+            /* Formulários mobile */
+            .form-control {
+                padding: 12px 15px;
+                font-size: 1rem;
+                border-radius: 8px;
+            }
+
+            /* Tabelas mobile */
+            .table-responsive {
+                border-radius: 8px;
+                margin-bottom: 1rem;
+            }
+
+            .table {
+                font-size: 0.85rem;
+            }
+
+            /* Paginação mobile */
+            .pagination {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .page-link {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+                margin: 2px;
+            }
+
+            /* Modal mobile */
+            .modal-dialog {
+                margin: 0.5rem;
+                max-width: calc(100% - 1rem);
+            }
+
+            .modal-content {
+                border-radius: 12px;
+            }
+
+            .modal-header {
+                padding: 1rem;
+                border-radius: 12px 12px 0 0;
+            }
+
+            .modal-body {
+                padding: 1rem;
+            }
+
+            .modal-footer {
+                padding: 1rem;
+                border-radius: 0 0 12px 12px;
+            }
+
+            /* Alertas mobile */
+            .alert {
+                padding: 1rem;
+                border-radius: 8px;
+                font-size: 0.9rem;
+            }
+
+            /* Loading mobile */
+            .loading-overlay {
+                background: rgba(255, 255, 255, 0.95);
+            }
+
+            .loading-spinner h5 {
+                font-size: 1.1rem;
+            }
+
+            .loading-spinner p {
+                font-size: 0.9rem;
+            }
+
+            /* Hero section mobile */
+            .hero-section {
+                padding: 2rem 1rem !important;
+                margin-bottom: 1.5rem !important;
+                border-radius: 12px;
+            }
+
+            .hero-section h1 {
+                font-size: 1.8rem !important;
+                margin-bottom: 1rem !important;
+            }
+
+            .hero-section p {
+                font-size: 0.95rem !important;
+                margin-bottom: 1rem !important;
+            }
+
+            .hero-section .badge {
+                font-size: 0.8rem !important;
+                padding: 8px 12px !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header-section {
+                padding: 0.6rem 0;
+            }
+
+            .header-title {
+                font-size: 1.4rem;
+            }
+
+            .header-nav-link {
+                padding: 8px 16px;
+                font-size: 0.8rem;
+                min-width: 100px;
+            }
+
+            .main-container {
+                padding: 0.25rem;
+            }
+
+            .card {
+                margin-bottom: 0.75rem;
+            }
+
+            .card-header {
+                padding: 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            .card-body {
+                padding: 0.75rem;
+            }
+
+            .stat-card {
+                padding: 1.25rem 0.75rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+            }
+
+            .upload-area {
+                padding: 1.5rem 0.75rem;
+                min-height: 120px;
+            }
+
+            .upload-placeholder i {
+                font-size: 2rem !important;
+            }
+
+            .map-container {
+                height: 250px !important;
+            }
+
+            canvas {
+                max-height: 180px !important;
+            }
+
+            .btn-tab-custom {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+                min-width: 90px;
+            }
+
+            .form-control {
+                padding: 10px 12px;
+                font-size: 0.95rem;
+            }
+
+            .table {
+                font-size: 0.8rem;
+            }
+
+            .page-link {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+
+            .modal-dialog {
+                margin: 0.25rem;
+                max-width: calc(100% - 0.5rem);
+            }
+
+            .modal-header,
+            .modal-body,
+            .modal-footer {
+                padding: 0.75rem;
+            }
+
+            .alert {
+                padding: 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            .hero-section {
+                padding: 1.5rem 0.75rem !important;
+            }
+
+            .hero-section h1 {
+                font-size: 1.6rem !important;
+            }
+
+            .hero-section p {
+                font-size: 0.9rem !important;
+            }
+        }
+
+        /* Landscape mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .header-section {
+                padding: 0.5rem 0;
+            }
+
+            .header-brand {
+                flex-direction: row;
+                margin-bottom: 0.5rem;
+            }
+
+            .header-logo {
+                height: 30px;
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+
+            .header-title {
+                font-size: 1.4rem;
+            }
+
+            .header-nav {
+                margin-bottom: 0.5rem;
+            }
+
+            .header-status {
+                margin-top: 0.5rem;
+            }
+
+            .map-container {
+                height: 200px !important;
+            }
+
+            .stat-card {
+                padding: 1rem 0.75rem;
+            }
+
+            .stat-number {
+                font-size: 1.8rem;
+            }
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+        }
+
+        /* Estatísticas */
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Botões de tabs */
+        .btn-tab-custom {
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-weight: 600;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .btn-tab-custom:not(.active) {
+            background: rgba(255,255,255,0.8);
+            color: var(--primary-color);
+            border-color: rgba(46, 125, 50, 0.2);
+        }
+
+        .btn-tab-custom:not(.active):hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-tab-custom.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+        }
+
+        /* Upload area */
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.5);
+        }
+
+        .upload-area:hover {
+            border-color: var(--secondary-color);
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background: rgba(46, 125, 50, 0.1);
+            transform: scale(1.02);
+        }
+
+        /* Mapa */
+        .map-container {
+            height: 400px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Legendas */
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            margin: 0 15px 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .legend-legal {
+            background-color: #28a745;
+        }
+
+        .legend-illegal {
+            background-color: #dc3545;
+        }
+
+        /* Badges */
+        .badge-classificacao {
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            border-radius: 12px;
+        }
+
+        /* Loading states */
+        .loading-placeholder {
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        /* Alerts */
+        .alert {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Buttons */
+        .btn-action {
+            border-radius: 8px;
+            padding: 6px 12px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        /* Histórico */
+        .stats-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .filter-card {
+            background: white;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .table-card {
+            background: white;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(76, 175, 80, 0.05);
+            transform: scale(1.001);
+            transition: all 0.2s ease;
+        }
+
+        .embarcacao-row {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .embarcacao-row:hover {
+            background-color: rgba(46, 125, 50, 0.05) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Paginação */
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 2px;
+            border: 1px solid #dee2e6;
+            color: var(--primary-color);
+            transition: all 0.2s ease;
+        }
+
+        /* Paginação - Design System Gov.br */
+        .pagination {
+            display: flex;
+            padding-left: 0;
+            list-style: none;
+            border-radius: 4px;
+            margin: 0;
+        }
+
+        .pagination .page-link {
+            position: relative;
+            display: block;
+            padding: 8px 12px;
+            margin-left: -1px;
+            line-height: 1.25;
+            color: var(--primary-color);
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            font-size: 14px;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+        }
+
+        .pagination .page-link:hover {
+            z-index: 2;
+            color: #1e40af;
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        .pagination .page-link:focus {
+            z-index: 3;
+            color: #1e40af;
+            background-color: #e9ecef;
+            outline: 0;
+            box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.25);
+        }
+
+        .pagination .page-item:first-child .page-link {
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+
+        .pagination .page-item:last-child .page-link {
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        .pagination .page-item.active .page-link {
+            z-index: 3;
+            color: #fff;
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            background-color: #fff;
+            border-color: #dee2e6;
+        }
+
+        /* Paginação Grande - Gov.br */
+        .pagination-lg .page-link {
+            padding: 12px 16px;
+            font-size: 16px;
+        }
+
+        .pagination-lg .page-item:first-child .page-link {
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+        }
+
+        .pagination-lg .page-item:last-child .page-link {
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
+        /* Paginação Pequena - Gov.br */
+        .pagination-sm .page-link {
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+
+        .pagination-sm .page-item:first-child .page-link {
+            border-top-left-radius: 3px;
+            border-bottom-left-radius: 3px;
+        }
+
+        .pagination-sm .page-item:last-child .page-link {
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        /* Hero section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        /* Modal melhorias */
+        .modal-content {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+        }
+
+        .btn-close-white {
+            filter: brightness(0) invert(1);
+        }
+
+        /* Coordenadas info */
+        .coords-info {
+            font-size: 0.85rem;
+        }
+
+        .coords-info strong {
+            color: var(--primary-color);
+        }
+
+        /* Image preview */
+        .image-preview {
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .main-container {
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1rem 1.5rem;
+        }
+
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 500;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 500;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+
+        .nav-tabs .nav-link {
+            border-radius: 25px 25px 0 0;
+            margin-right: 5px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        /* Container principal com largura limitada */
+        .main-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Estilos para header simplificado */
+        .header-simplified {
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(76, 175, 80, 0.1) 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-tab-custom {
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .btn-tab-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-tab-custom.active {
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Estilos melhorados para cards */
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1rem 1.5rem;
+            border: none;
+        }
+
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .card-header small {
+            opacity: 0.9;
+            font-size: 0.8rem;
+        }
+
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 4rem 2rem;
+            text-align: center;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area:hover {
+            border-color: var(--secondary-color);
+            background: #f8fff8;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--secondary-color);
+            background: #f8fff8;
+            transform: scale(1.02);
+        }
+
+        .map-container {
+            height: 500px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-legal { color: var(--secondary-color); }
+        .stat-illegal { color: var(--danger-color); }
+        .stat-fiscal { color: var(--info-color); }
+        .stat-total { color: var(--primary-color); }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .legend-legal { background: var(--secondary-color); }
+        .legend-illegal { background: var(--danger-color); }
+
+        /* Estatísticas mobile já otimizadas acima */
+
+        /* Animações */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <!-- Logo e Título -->
+                <div class="col-md-4">
+                    <div class="header-brand">
+                        <img src="{% static 'logo.png' %}" alt="ARITANA Logo" class="header-logo">
+                        <h1 class="header-title">ARITANA</h1>
+                    </div>
+                </div>
+                
+                <!-- Navegação Central -->
+                <div class="col-md-4">
+                    <nav class="header-nav">
+                        <ul class="nav nav-pills justify-content-center">
+                    <li class="nav-item">
+                        <a class="nav-link header-nav-link" href="{% url 'dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link header-nav-link" href="{% url 'historico' %}">
+                            <i class="fas fa-history"></i> Histórico
+                        </a>
+                    </li>
+                </ul>
+                    </nav>
+                </div>
+                
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mt-4 main-container">
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div id="main-content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-5 py-4 bg-white border-top">
+        <div class="container">
+            <div class="row align-items-center">
+                <!-- Logo e Descrição -->
+                <div class="col-lg-8 mb-3 mb-lg-0">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{% static 'logo.png' %}" alt="ARITANA Logo" class="me-3" style="height: 45px; width: auto;">
+                        <h5 class="text-dark mb-0 fw-bold">ARITANA</h5>
+                    </div>
+                    <p class="text-muted mb-3 fs-6">
+                        Sistema inteligente de monitoramento e identificação de embarcações na região amazônica, 
+                        contribuindo para a preservação ambiental e segurança fluvial em Belém do Pará.
+                    </p>
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge bg-success">Proteção Ambiental</span>
+                        <span class="badge bg-primary">Segurança Fluvial</span>
+                        <span class="badge bg-info">Monitoramento 24/7</span>
+                    </div>
+                </div>
+
+                <!-- Informações de Contato -->
+                <div class="col-lg-4 text-lg-end">
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center justify-content-lg-end mb-2">
+                            <i class="fas fa-map-marker-alt text-success me-2"></i>
+                            <span class="text-muted">Belém - Pará, Brasil</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-lg-end mb-2">
+                            <i class="fas fa-water text-info me-2"></i>
+                            <span class="text-muted">Baía do Guajará</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-lg-end">
+                            <i class="fas fa-shield-alt text-warning me-2"></i>
+                            <span class="text-muted">Amazônia Legal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Linha de Copyright -->
+            <div class="row pt-3 border-top">
+                <div class="col-md-6">
+                    <p class="text-muted mb-0 small">
+                        © 2025 ARITANA. Sistema de Monitoramento de Embarcações. 
+                        <span class="text-success fw-bold">Proteção da Amazônia Legal.</span>
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="d-flex justify-content-md-end align-items-center gap-3">
+                        <div class="text-center">
+                            <div class="text-dark fw-bold small">UFAL</div>
+                            <small class="text-muted">UNIVERSIDADE FEDERAL DE ALAGOAS</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-dark fw-bold small">UFPE</div>
+                            <small class="text-muted">UNIVERSIDADE FEDERAL DE PERNAMBUCO</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Local -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}?v=3.0" defer></script>
+    <!-- Sistema de Cache de Navegação - DESABILITADO -->
+    <script src="{% static 'js/navigation-cache.js' %}?v=3.0" defer></script>
+    <!-- Scripts do Dashboard -->
+    <script src="{% static 'js/dashboard.js' %}?v=3.0" defer></script>
+    <!-- Sistema de Processamento Assíncrono -->
+    <script src="{% static 'js/async-processing.js' %}?v=3.0" defer></script>
+    <!-- Melhorias de UI -->
+    <script src="{% static 'js/ui-improvements.js' %}?v=3.0" defer></script>
+    <!-- Melhorias Mobile -->
+    <script src="{% static 'js/mobile-improvements.js' %}?v=3.0" defer></script>
+    
+    <!-- Carregar bibliotecas pesadas apenas quando necessário -->
+    <script>
+        // Carregar Leaflet apenas quando necessário
+        function loadLeaflet() {
+            return new Promise((resolve, reject) => {
+                if (typeof L !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                script.onload = function() {
+                    console.log('Leaflet carregado');
+                    resolve();
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Carregar Chart.js apenas quando necessário
+        function loadChartJS() {
+            return new Promise((resolve, reject) => {
+                if (typeof Chart !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                script.onload = function() {
+                    console.log('Chart.js carregado');
+                    resolve();
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Expor funções globalmente
+        window.loadLeaflet = loadLeaflet;
+        window.loadChartJS = loadChartJS;
+        
+        // Função de navegação desabilitada - usar navegação normal do navegador
+        window.navigateToPage = function(pageName, pageNumber = 1) {
+            console.log(`navigateToPage desabilitado - usando navegação normal`);
+            // Não fazer nada - deixar navegação normal do navegador funcionar
+            return false;
+        };
+        
+        // Função para carregar conteúdo da página via AJAX
+        function loadPageContent(pageName, pageNumber = 1) {
+            const contentContainer = document.querySelector('#main-content');
+            if (!contentContainer) return;
+            
+            // Mostrar loading
+            contentContainer.innerHTML = `
+                <div class="d-flex align-items-center justify-content-center" style="height: 400px;">
+                    <div class="text-center">
+                        <div class="spinner-border text-success mb-3" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p class="text-muted">Carregando ${pageName}...</p>
+                    </div>
+                </div>
+            `;
+            
+            // Carregar conteúdo
+            fetch(pageName === 'dashboard' ? '/' : '/historico/')
+                .then(response => response.text())
+                .then(html => {
+                    // Extrair apenas o conteúdo principal
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const mainContent = doc.querySelector('#main-content') || doc.querySelector('main') || doc.querySelector('.container');
+                    
+                    if (mainContent) {
+                        contentContainer.innerHTML = mainContent.innerHTML;
+                        
+                        // Reinicializar scripts da página
+                        setTimeout(() => {
+                            if (pageName === 'dashboard' && window.safeReinitializeDashboard) {
+                                window.safeReinitializeDashboard();
+                            } else if (pageName === 'historico' && window.initializeHistorico) {
+                                window.initializeHistorico();
+                            }
+                        }, 100);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar página:', error);
+                    contentContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h5>Erro ao carregar página</h5>
+                            <p>Não foi possível carregar o conteúdo. <a href="${pageName === 'dashboard' ? '/' : '/historico/'}" class="alert-link">Tentar novamente</a></p>
+                        </div>
+                    `;
+                });
+        }
+        
+        // Interceptar navegação do browser
+        window.addEventListener('popstate', function(event) {
+            if (event.state && event.state.page) {
+                loadPageContent(event.state.page);
+            }
+        });
+
+        // Função para atualizar link ativo
+        function updateActiveNavLink(pageName) {
+            // Remove classe active de todos os links
+            document.querySelectorAll('.header-nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Adiciona classe active ao link atual
+            const activeLink = document.querySelector(`[href*="${pageName}"]`) || 
+                              document.querySelector(`[onclick*="${pageName}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+        
+        // Marcar link ativo baseado na URL atual
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const links = document.querySelectorAll('.header-nav-link');
+            
+            links.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href');
+                
+                // Marcar Dashboard como ativo se estiver na raiz
+                if (currentPath === '/' && (href === '/' || href.includes('dashboard'))) {
+                    link.classList.add('active');
+                }
+                // Marcar Histórico como ativo
+                else if (currentPath.includes('historico') && href.includes('historico')) {
+                    link.classList.add('active');
+                }
+                
+                // Remover qualquer event listener existente que possa interferir
+                const newLink = link.cloneNode(true);
+                if (link.parentNode) {
+                    link.parentNode.replaceChild(newLink, link);
+                }
+            });
+            
+            // Remover qualquer event listener do navigationCache que possa interferir
+            if (window.navigationCache && window.navigationCache.navigateToPage) {
+                console.log('Sistema de cache detectado - desabilitando para navegação direta');
+                window.navigationCache.navigateToPage = null;
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

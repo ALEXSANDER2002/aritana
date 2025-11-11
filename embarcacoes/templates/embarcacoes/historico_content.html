@@ -1,0 +1,223 @@
+<!-- Conteúdo do Histórico -->
+<div class="row">
+    <!-- Descrição do Sistema -->
+    <div class="col-12 mb-4">
+        <div class="text-center py-3">
+            <p class="text-muted mb-3 lead">
+                Registro completo de todas as embarcações analisadas pelo sistema ARITANA
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Estatísticas Gerais Mobile-Friendly -->
+    <div class="col-12 mb-4">
+        <div class="row g-2">
+            <div class="col-12 col-sm-4 mb-2">
+                <div class="stat-card h-100">
+                    <div class="stat-number stat-total" id="total-embarcacoes">0</div>
+                    <div class="text-muted small">Total de Embarcações</div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-4 mb-2">
+                <div class="stat-card h-100">
+                    <div class="stat-number stat-legal" id="embarcacoes-legais">0</div>
+                    <div class="text-muted small">Embarcações Legais</div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-4 mb-2">
+                <div class="stat-card h-100">
+                    <div class="stat-number stat-illegal" id="embarcacoes-ilegais">0</div>
+                    <div class="text-muted small">Embarcações Ilegais</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros e Ações -->
+    <div class="col-12 mb-4">
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-filter"></i> Filtros e Ações</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-md-3">
+                        <label for="filtro-tipo" class="form-label fw-bold">
+                            <i class="fas fa-tag me-1"></i>Tipo de Embarcação
+                        </label>
+                        <select class="form-select" id="filtro-tipo">
+                            <option value="">Todos os tipos</option>
+                            <option value="legal">✅ Legal</option>
+                            <option value="ilegal">⚠️ Ilegal</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="filtro-regiao" class="form-label fw-bold">
+                            <i class="fas fa-map-marker-alt me-1"></i>Região
+                        </label>
+                        <select class="form-select" id="filtro-regiao">
+                            <option value="">Todas as regiões</option>
+                            <option value="belem_centro">Belém Centro</option>
+                            <option value="icoaraci">Icoaraci</option>
+                            <option value="outeiro">Outeiro</option>
+                            <option value="mosqueiro">Mosqueiro</option>
+                            <option value="cotijuba">Cotijuba</option>
+                            <option value="guama">Guamá</option>
+                            <option value="ananindeua">Ananindeua</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="filtro-busca" class="form-label fw-bold">
+                            <i class="fas fa-search me-1"></i>Buscar
+                        </label>
+                        <input type="text" class="form-control" id="filtro-busca" placeholder="Nome ou ID da embarcação">
+                    </div>
+                    <div class="col-12 col-md-3 d-flex align-items-end">
+                        <div class="btn-group w-100 d-flex">
+                            <button class="btn btn-primary btn-action flex-fill" onclick="filtrarEmbarcacoes()">
+                                <i class="fas fa-search me-1"></i>Filtrar
+                            </button>
+                            <a href="{% url 'exportar_csv' %}" class="btn btn-success btn-action flex-fill">
+                                <i class="fas fa-download me-1"></i>CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Embarcações -->
+    <div class="col-12">
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Lista de Embarcações</h5>
+                <small class="text-muted">Clique em uma embarcação para ver mais detalhes</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="tabela-embarcacoes">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="border-0">
+                                    <i class="fas fa-hashtag me-1"></i>ID
+                                </th>
+                                <th class="border-0">
+                                    <i class="fas fa-ship me-1"></i>Embarcação
+                                </th>
+                                <th class="border-0">
+                                    <i class="fas fa-tag me-1"></i>Status
+                                </th>
+                                <th class="border-0">
+                                    <i class="fas fa-map-marker-alt me-1"></i>Região
+                                </th>
+                                <th class="border-0">
+                                    <i class="fas fa-calendar me-1"></i>Data
+                                </th>
+                                <th class="border-0">
+                                    <i class="fas fa-cogs me-1"></i>Ações
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dados serão carregados dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginação -->
+                <div class="card-footer">
+                    <nav aria-label="Navegação de páginas">
+                        <ul class="pagination justify-content-center mb-0">
+                            <!-- Paginação será gerada dinamicamente -->
+                        </ul>
+                    </nav>
+                    
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            Página <span id="current-page">1</span> de <span id="total-pages">1</span>
+                            (<span id="page-info">0 a 0 de 0 embarcações</span>)
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalhes -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-ship me-2"></i>Detalhes da Embarcação
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Conteúdo será carregado via JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Imagem -->
+<div class="modal fade" id="modalImagem" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-camera me-2"></i>Imagem da Embarcação
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="imagem-embarcacao" src="" alt="Imagem da Embarcação" class="img-fluid image-preview" style="max-height: 70vh;">
+                <div class="mt-3">
+                    <p class="text-muted" id="imagem-titulo"></p>
+                    <a id="link-imagem-original" href="" target="_blank" class="btn btn-primary">
+                        <i class="fas fa-external-link-alt me-1"></i>Ver Imagem Original
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Mapa -->
+<div class="modal fade" id="modalMapa" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-map-marker-alt me-2"></i>Localização no Mapa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-map" style="height: 400px; border-radius: 10px;"></div>
+                <div class="mt-3 text-center">
+                    <p class="text-muted" id="coordenadas-info"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

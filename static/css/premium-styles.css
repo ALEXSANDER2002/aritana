@@ -1,0 +1,826 @@
+/**
+ * Estilos Premium para ARITANA
+ * Design moderno e sofisticado mantendo a identidade da marca
+ */
+
+/* Paleta de Cores Profissional - Gov.br + Material Design */
+:root {
+    /* Cores Primárias - Verde Institucional (ARITANA) */
+    --primary-color: #168821;
+    --primary-hover: #0d5717;
+    --primary-light: #d4edda;
+    --primary-border: #c3e6cb;
+    
+    /* Cores Secundárias - Azul Gov.br */
+    --secondary-color: #1351b4;
+    --secondary-hover: #0c3980;
+    --secondary-light: #d4e5ff;
+    --secondary-border: #b3d7ff;
+    
+    /* Cores de Status Profissionais */
+    --success-color: #168821;
+    --success-hover: #0d5717;
+    --success-light: #d4edda;
+    
+    --danger-color: #e52207;
+    --danger-hover: #b01a05;
+    --danger-light: #f8d7da;
+    
+    --warning-color: #ffcd07;
+    --warning-hover: #d9a900;
+    --warning-light: #fff3cd;
+    
+    --info-color: #155bcb;
+    --info-hover: #0d3c8a;
+    --info-light: #cfe2ff;
+    
+    /* Cores Neutras - Gov.br */
+    --gray-1: #f8f8f8;
+    --gray-2: #f1f1f1;
+    --gray-3: #e6e6e6;
+    --gray-4: #d6d6d6;
+    --gray-5: #c6c6c6;
+    --gray-6: #909090;
+    --gray-7: #6b6b6b;
+    --gray-8: #555555;
+    --gray-9: #333333;
+    --gray-10: #1a1a1a;
+    
+    /* Background */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f8f8;
+    --bg-tertiary: #f1f1f1;
+    
+    /* Bordas e Sombras Profissionais */
+    --border-color: #d6d6d6;
+    --border-color-light: #e6e6e6;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 4px 8px 0 rgba(0, 0, 0, 0.10);
+    
+    /* Bordas Arredondadas - Gov.br */
+    --border-radius-sm: 4px;
+    --border-radius-md: 4px;
+    --border-radius-lg: 8px;
+    --border-radius-xl: 8px;
+    
+    /* Transições Profissionais */
+    --transition-fast: all 0.15s ease-in-out;
+    --transition-smooth: all 0.2s ease-in-out;
+    
+    /* Tipografia */
+    --font-family-sans: 'Rawline', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-size-base: 14px;
+    --line-height-base: 1.5;
+}
+
+/* Efeitos de Vidro (Glassmorphism) */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--glass-shadow);
+    transition: var(--transition-smooth);
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+/* Botões - Design System Gov.br */
+.btn-gov {
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 8px 16px;
+    transition: all 0.15s ease-in-out;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    min-height: 40px;
+}
+
+.btn-gov:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.btn-gov:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary-gov {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.btn-primary-gov:hover:not(:disabled) {
+    background: #1e4a3a;
+    border-color: #1e4a3a;
+}
+
+.btn-success-gov {
+    background: var(--success-color);
+    color: white;
+    border-color: var(--success-color);
+}
+
+.btn-success-gov:hover:not(:disabled) {
+    background: #047857;
+    border-color: #047857;
+}
+
+.btn-danger-gov {
+    background: var(--danger-color);
+    color: white;
+    border-color: var(--danger-color);
+}
+
+.btn-danger-gov:hover:not(:disabled) {
+    background: #b91c1c;
+    border-color: #b91c1c;
+}
+
+.btn-outline-gov {
+    background: transparent;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-gov:hover:not(:disabled) {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Cards de Estatísticas Premium */
+.stat-card-premium {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-lg);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    box-shadow: var(--glass-shadow);
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+}
+
+.stat-card-premium:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+.stat-number-premium {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.stat-label-premium {
+    color: #2d3748;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-description-premium {
+    color: #718096;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* Animações Premium */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(102, 126, 234, 0.6);
+    }
+}
+
+@keyframes slideInFromLeft {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInFromRight {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInScale {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow {
+    animation: glow 2s ease-in-out infinite;
+}
+
+.animate-slide-in-left {
+    animation: slideInFromLeft 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+    animation: slideInFromRight 0.6s ease-out;
+}
+
+.animate-fade-in-scale {
+    animation: fadeInScale 0.6s ease-out;
+}
+
+/* Efeitos de Hover Premium */
+.hover-lift {
+    transition: var(--transition-smooth);
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+.hover-scale {
+    transition: var(--transition-smooth);
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.hover-glow {
+    transition: var(--transition-smooth);
+}
+
+.hover-glow:hover {
+    box-shadow: 0 0 25px rgba(102, 126, 234, 0.4);
+}
+
+/* Gradientes de Texto */
+.text-gradient-primary {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.text-gradient-success {
+    background: var(--success-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.text-gradient-danger {
+    background: var(--danger-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Badges Premium */
+.badge-premium {
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    box-shadow: var(--glass-shadow);
+    transition: var(--transition-smooth);
+    border: none;
+}
+
+.badge-premium:hover {
+    transform: scale(1.05);
+}
+
+.badge-primary-premium {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.badge-success-premium {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.badge-danger-premium {
+    background: var(--danger-gradient);
+    color: white;
+}
+
+.badge-warning-premium {
+    background: var(--warning-gradient);
+    color: white;
+}
+
+.badge-info-premium {
+    background: var(--info-gradient);
+    color: white;
+}
+
+/* Formulários Premium */
+.form-control-premium {
+    border-radius: var(--border-radius-md);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    padding: 12px 16px;
+    transition: var(--transition-smooth);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+}
+
+.form-control-premium:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+}
+
+.form-select-premium {
+    border-radius: var(--border-radius-md);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    padding: 12px 16px;
+    transition: var(--transition-smooth);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+}
+
+.form-select-premium:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+}
+
+/* Tabelas - Design System Gov.br */
+.table-gov {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
+}
+
+.table-gov thead th {
+    background: #f8f9fa;
+    color: #495057;
+    border: none;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 12px 16px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table-gov tbody tr {
+    transition: background-color 0.15s ease-in-out;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table-gov tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.table-gov tbody tr:last-child {
+    border-bottom: none;
+}
+
+.table-gov tbody td {
+    padding: 12px 16px;
+    border: none;
+    vertical-align: middle;
+    font-size: 14px;
+    color: #495057;
+}
+
+/* Tabela Responsiva - Gov.br */
+.table-responsive-gov {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.table-responsive-gov .table-gov {
+    border: none;
+    box-shadow: none;
+}
+
+/* Modais Premium */
+.modal-premium .modal-content {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+}
+
+.modal-premium .modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    border-bottom: none;
+}
+
+/* Paginação Premium */
+.pagination-premium .page-link {
+    border-radius: var(--border-radius-sm);
+    margin: 0 2px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: var(--transition-smooth);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+}
+
+.pagination-premium .page-link:hover {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--glass-shadow);
+}
+
+.pagination-premium .page-item.active .page-link {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: white;
+    box-shadow: var(--glass-shadow);
+}
+
+/* Responsividade Premium */
+/* Estilos Globais Profissionais */
+body {
+    background: var(--bg-secondary);
+    color: var(--gray-9);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+}
+
+/* Header Profissional */
+header {
+    background: #ffffff !important;
+    border-bottom: 4px solid var(--primary-color);
+    box-shadow: var(--shadow-md);
+}
+
+header .header-nav-link.active {
+    background: var(--primary-color) !important;
+    color: white !important;
+}
+
+header .header-nav-link {
+    color: var(--gray-8) !important;
+}
+
+header .header-nav-link:hover {
+    background: var(--primary-light) !important;
+    color: var(--primary-color) !important;
+}
+
+/* Cards Profissionais */
+.card {
+    border: 1px solid var(--border-color-light);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-smooth);
+    background: var(--bg-primary);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-color);
+}
+
+/* Botões Profissionais - Gov.br Style */
+.btn-primary {
+    background: var(--primary-color) !important;
+    border: 2px solid var(--primary-color) !important;
+    color: white !important;
+    font-weight: 500 !important;
+    transition: var(--transition-fast);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.btn-primary:focus {
+    box-shadow: 0 0 0 4px rgba(22, 136, 33, 0.2) !important;
+}
+
+.btn-success {
+    background: var(--success-color) !important;
+    border: 2px solid var(--success-color) !important;
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+.btn-success:hover {
+    background: var(--success-hover) !important;
+    border-color: var(--success-hover) !important;
+}
+
+.btn-danger {
+    background: var(--danger-color) !important;
+    border: 2px solid var(--danger-color) !important;
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+.btn-danger:hover {
+    background: var(--danger-hover) !important;
+    border-color: var(--danger-hover) !important;
+}
+
+.btn-info {
+    background: var(--info-color) !important;
+    border: 2px solid var(--info-color) !important;
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+.btn-info:hover {
+    background: var(--info-hover) !important;
+    border-color: var(--info-hover) !important;
+}
+
+.btn-warning {
+    background: var(--warning-color) !important;
+    border: 2px solid var(--warning-color) !important;
+    color: var(--gray-10) !important;
+    font-weight: 500 !important;
+}
+
+.btn-warning:hover {
+    background: var(--warning-hover) !important;
+    border-color: var(--warning-hover) !important;
+}
+
+.btn-secondary {
+    background: var(--gray-6) !important;
+    border: 2px solid var(--gray-6) !important;
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+.btn-secondary:hover {
+    background: var(--gray-7) !important;
+    border-color: var(--gray-7) !important;
+}
+
+/* Badges Profissionais */
+.badge.bg-success {
+    background: var(--success-color) !important;
+    color: white !important;
+}
+
+.badge.bg-danger {
+    background: var(--danger-color) !important;
+    color: white !important;
+}
+
+.badge.bg-warning {
+    background: var(--warning-color) !important;
+    color: var(--gray-10) !important;
+}
+
+.badge.bg-info {
+    background: var(--info-color) !important;
+    color: white !important;
+}
+
+.badge.bg-primary {
+    background: var(--primary-color) !important;
+    color: white !important;
+}
+
+.badge.bg-secondary {
+    background: var(--gray-6) !important;
+    color: white !important;
+}
+
+/* Tabelas Profissionais */
+.table {
+    border-color: var(--border-color-light);
+}
+
+.table thead {
+    background: var(--gray-2);
+    color: var(--gray-9);
+    font-weight: 600;
+}
+
+.table tbody tr:hover {
+    background: var(--gray-1);
+    transition: var(--transition-fast);
+}
+
+/* Alertas Profissionais */
+.alert-success {
+    background: var(--success-light);
+    border: 1px solid var(--success-color);
+    border-left: 4px solid var(--success-color);
+    color: var(--gray-10);
+}
+
+.alert-danger {
+    background: var(--danger-light);
+    border: 1px solid var(--danger-color);
+    border-left: 4px solid var(--danger-color);
+    color: var(--gray-10);
+}
+
+.alert-warning {
+    background: var(--warning-light);
+    border: 1px solid var(--warning-color);
+    border-left: 4px solid var(--warning-color);
+    color: var(--gray-10);
+}
+
+.alert-info {
+    background: var(--info-light);
+    border: 1px solid var(--info-color);
+    border-left: 4px solid var(--info-color);
+    color: var(--gray-10);
+}
+
+/* Links Profissionais */
+a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+a:hover {
+    color: var(--secondary-hover);
+    text-decoration: underline;
+}
+
+/* Formulários Profissionais */
+.form-control:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 4px rgba(19, 81, 180, 0.15);
+    outline: none;
+}
+
+.form-select:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 4px rgba(19, 81, 180, 0.15);
+    outline: none;
+}
+
+@media (max-width: 768px) {
+    .stat-card-premium {
+        padding: 2rem 1.5rem;
+    }
+    
+    .stat-number-premium {
+        font-size: 2.5rem;
+    }
+    
+    .stat-label-premium {
+        font-size: 1rem;
+    }
+    
+    .btn-premium {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Modal de Imagem */
+.modal#modalImagem .modal-dialog {
+    max-width: 90%;
+}
+
+.modal#modalImagem .modal-content {
+    background: transparent;
+    border: none;
+}
+
+.modal#modalImagem .modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-top-left-radius: var(--border-radius-md);
+    border-top-right-radius: var(--border-radius-md);
+}
+
+.modal#modalImagem .modal-body {
+    padding: 2rem;
+}
+
+.modal#modalImagem img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal#modalImagem .modal-footer {
+    background: white;
+    border: none;
+    border-bottom-left-radius: var(--border-radius-md);
+    border-bottom-right-radius: var(--border-radius-md);
+}
+
+/* Loading Spinner */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Efeitos de Partículas */
+.particles-bg {
+    position: relative;
+    overflow: hidden;
+}
+
+.particles-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Scrollbar Premium */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-gradient);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-gradient);
+}

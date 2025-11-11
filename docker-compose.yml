@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    container_name: aritana-app
+    ports:
+      - "8000:8000"
+    volumes:
+      # Media files (imagens enviadas)
+      - ./media:/app/media
+    env_file:
+      - .env
+    restart: unless-stopped
+
