@@ -26,7 +26,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-^x88_21f#((z^2l)piaa8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver', '0.0.0.0']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver', '0.0.0.0',"aritana-production.up.railway.app"]
 
 
 # Application definition
