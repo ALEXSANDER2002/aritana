@@ -339,7 +339,7 @@
                 <div class="stats-card animate-fade-in-up" style="animation-delay: 0.2s;">
                     <div class="stat-number" id="embarcacoes-legais">0</div>
                     <div class="stat-label">
-                        <i class="fas fa-check-circle me-2"></i>Embarcaciones Legais
+                        <i class="fas fa-check-circle me-2"></i>Embarcações Legais
                     </div>
                     <div class="stat-description">Em conformidade com a legislação</div>
                 </div>
@@ -348,7 +348,7 @@
                 <div class="stats-card animate-fade-in-up" style="animation-delay: 0.3s;">
                     <div class="stat-number" id="embarcacoes-ilegais">0</div>
                     <div class="stat-label">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Embarcaciones Ilegais
+                        <i class="fas fa-exclamation-triangle me-2"></i>Embarcações Ilegais
                     </div>
                     <div class="stat-description">Requerem atenção das autoridades</div>
                 </div>
@@ -577,9 +577,12 @@
 </div>
 {% endblock %}
 
+{% block dashboard_js %}
+<!-- NÃO carregar dashboard.js no histórico -->
+{% endblock %}
+
 {% block extra_js %}
-<!-- Sistema de processamento assíncrono -->
-<script src="{% static 'js/async-processing.js' %}?v={{ timestamp }}"></script>
+<!-- Scripts específicos do histórico (carregados ANTES do dashboard.js do base.html) -->
 <script src="{% static 'js/historico-optimized.js' %}?v={{ timestamp }}"></script>
 <script>
 // Forçar limpeza do cache e recarregar dados
@@ -590,8 +593,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     console.log('Cache limpo - recarregando dados...');
     
-    // Verificar se a tabela tem 7 colunas
+    // Verificar se as funções estão disponíveis
     setTimeout(function() {
+        console.log('🔍 Verificando funções disponíveis:');
+        console.log('  - verDetalhes:', typeof window.verDetalhes);
+        console.log('  - verImagem:', typeof window.verImagem);
+        console.log('  - verNoMapa:', typeof window.verNoMapa);
+        console.log('  - bootstrap:', typeof bootstrap);
+        console.log('  - Modal #modalDetalhes existe:', !!document.getElementById('modalDetalhes'));
+        
+        // Verificar se a tabela tem 7 colunas
         const headerCells = document.querySelectorAll('#tabela-embarcacoes thead th');
         const bodyCells = document.querySelectorAll('#tabela-embarcacoes tbody tr:first-child td');
         

@@ -1,0 +1,157 @@
+{% extends 'embarcacoes/base.html' %}
+{% load static %}
+
+{% block title %}Teste de Upload - ARITANA{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-lite {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        background: #111827;
+        border: none;
+        border-radius: 8px;
+        padding: 0.65rem 1.75rem;
+        font-weight: 500;
+    }
+
+    table tbody tr td,
+    table thead th {
+        vertical-align: middle;
+        font-size: 0.85rem;
+    }
+
+    .badge-status {
+        display: inline-block;
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card-lite">
+                <h2 class="h5 mb-3">Upload dedicado para testes</h2>
+                <p class="text-muted small mb-4">
+                    Preencha todos os campos e envie uma imagem grande para validar o fluxo completo.
+                    Campos obrigatórios já assumem padrões aceitos pela API caso fiquem em branco.
+                </p>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Imagem (JPG/PNG até 20MB) <span class="text-danger">*</span></label>
+                        <input type="file" name="imagem" accept="image/*" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Região <span class="text-danger">*</span></label>
+                        <input type="text" name="regiao" class="form-control" placeholder="Ex: Norte"
+                               value="{{ request.POST.regiao|default:'Norte' }}">
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6 mb-3">
+                            <label class="form-label">Localidade</label>
+                            <input type="text" name="localidade" class="form-control" placeholder="Ex: Belém"
+                                   value="{{ request.POST.localidade|default:'Belém' }}">
+                        </div>
+                        <div class="col-sm-3 mb-3">
+                            <label class="form-label">Latitude</label>
+                            <input type="text" name="latitude" class="form-control" placeholder="-1.4558"
+                                   value="{{ request.POST.latitude|default:'-1.4558' }}">
+                        </div>
+                        <div class="col-sm-3 mb-3">
+                            <label class="form-label">Longitude</label>
+                            <input type="text" name="longitude" class="form-control" placeholder="-48.5044"
+                                   value="{{ request.POST.longitude|default:'-48.5044' }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Título</label>
+                        <input type="text" name="titulo" class="form-control" placeholder="Identificação da imagem"
+                               value="{{ request.POST.titulo }}">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Descrição</label>
+                        <textarea name="descricao" rows="3" class="form-control"
+                                  placeholder="Observações para o time de fiscalização">{{ request.POST.descricao }}</textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Enviar para processamento
+                        </button>
+                    </div>
+                </form>
+                {% if job_id %}
+                <div class="alert alert-info mt-4 mb-0" role="alert">
+                    <strong>Job criado:</strong> {{ job_id }}.<br>
+                    Utilize o painel ao lado para acompanhar o status.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card-lite">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 mb-0">Histórico recente</h2>
+                    <a href="{% url 'historico' %}" class="btn btn-sm btn-outline-secondary">
+                        Ver histórico completo
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Data</th>
+                                <th>Título</th>
+                                <th>Status</th>
+                                <th>Job ID</th>
+                                <th>Mensagem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for imagem in historico_imagens %}
+                            <tr {% if job_id and imagem.job_id == job_id %}class="table-info"{% endif %}>
+                                <td>{{ imagem.data_upload|date:"d/m/Y H:i" }}</td>
+                                <td>{{ imagem.titulo|default:"—" }}</td>
+                                <td>
+                                    <span class="badge-status bg-{{ imagem.status_color }}">
+                                        {{ imagem.get_status_analise_display }}
+                                    </span>
+                                </td>
+                                <td class="text-break" style="max-width: 150px;">{{ imagem.job_id|default:"—" }}</td>
+                                <td class="text-muted">{{ imagem.mensagem_status|default:"—" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    Nenhum upload registrado ainda.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

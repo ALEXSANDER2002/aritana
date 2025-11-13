@@ -41,3 +41,4 @@ FASTAPI_YOLO_URL=https://sua-api.com
 
 Limite atual: 20 MB.
 
+

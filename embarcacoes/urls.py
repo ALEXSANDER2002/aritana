@@ -1,16 +1,17 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
-    # SPA (Single Page Application) - versão otimizada
-    path('', views.spa, name='spa'),
-    path('app/', views.spa, name='app'),
+    # Rota principal redireciona para dashboard
+    path('', RedirectView.as_view(pattern_name='dashboard', permanent=False), name='home'),
     
-    # Views tradicionais (mantidas para compatibilidade)
+    # Views principais
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('historico/', views.historico, name='historico'),
     path('upload/', views.upload_imagem, name='upload_imagem'),
     path('upload-page/', views.upload_imagem, name='upload_page'),
-    path('historico/', views.historico, name='historico'),
+    path('upload-grande/', views.upload_teste_grande, name='upload_teste_grande'),
     
     # APIs JSON
     path('api/mapa/', views.dados_mapa_json, name='dados_mapa_json'),

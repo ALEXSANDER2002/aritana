@@ -987,41 +987,28 @@ function createRegionalChart(regionalData) {
     console.log('Gráfico regional criado');
 }
 
+// Redirecionar para página de upload
+function redirecionarParaUpload() {
+    console.log('Redirecionando para página de upload...');
+    window.location.href = '/upload-page/';
+}
+
 // Inicializar upload
 function initializeUpload() {
-    const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const uploadDetails = document.getElementById('uploadDetails');
     
-    if (!uploadArea || !fileInput) return;
+    // A área de upload agora usa onclick inline no template
+    // para garantir que funcione imediatamente sem depender de JavaScript carregado
+    console.log('Upload inicializado - usando onclick inline do template');
     
-    uploadArea.addEventListener('click', () => fileInput.click());
-    
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
-    
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
-    });
-    
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            fileInput.files = files;
-            handleFileSelect(files[0]);
-        }
-    });
-    
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleFileSelect(e.target.files[0]);
-        }
-    });
+    if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+    }
 }
 
 function handleFileSelect(file) {
@@ -1228,6 +1215,7 @@ window.initializeMap = initializeMap;
 window.initializeCharts = initializeCharts;
 window.initializeUpload = initializeUpload;
 window.initializeTabs = initializeTabs;
+window.redirecionarParaUpload = redirecionarParaUpload;
 // Função para filtrar embarcações no histórico
 function filtrarEmbarcacoes() {
     const tipoFiltro = document.getElementById('filtro-tipo')?.value || '';

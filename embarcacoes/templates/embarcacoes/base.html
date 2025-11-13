@@ -2089,12 +2089,12 @@
 
     <!-- Bootstrap JS Local -->
     <script src="{% static 'js/bootstrap.bundle.min.js' %}?v=3.0" defer></script>
-    <!-- Sistema de Cache de Navegação - DESABILITADO -->
-    <script src="{% static 'js/navigation-cache.js' %}?v=3.0" defer></script>
-    <!-- Scripts do Dashboard -->
-    <script src="{% static 'js/dashboard.js' %}?v=3.0" defer></script>
     <!-- Sistema de Processamento Assíncrono -->
     <script src="{% static 'js/async-processing.js' %}?v=3.0" defer></script>
+    <!-- Scripts do Dashboard (apenas se não for histórico) -->
+    {% block dashboard_js %}
+    <script src="{% static 'js/dashboard.js' %}?v=3.0" defer></script>
+    {% endblock %}
     <!-- Melhorias de UI -->
     <script src="{% static 'js/ui-improvements.js' %}?v=3.0" defer></script>
     <!-- Melhorias Mobile -->
@@ -2232,27 +2232,15 @@
                 link.classList.remove('active');
                 const href = link.getAttribute('href');
                 
-                // Marcar Dashboard como ativo se estiver na raiz
-                if (currentPath === '/' && (href === '/' || href.includes('dashboard'))) {
+                // Marcar Dashboard como ativo
+                if ((currentPath === '/' || currentPath.includes('dashboard')) && href.includes('dashboard')) {
                     link.classList.add('active');
                 }
                 // Marcar Histórico como ativo
                 else if (currentPath.includes('historico') && href.includes('historico')) {
                     link.classList.add('active');
                 }
-                
-                // Remover qualquer event listener existente que possa interferir
-                const newLink = link.cloneNode(true);
-                if (link.parentNode) {
-                    link.parentNode.replaceChild(newLink, link);
-                }
             });
-            
-            // Remover qualquer event listener do navigationCache que possa interferir
-            if (window.navigationCache && window.navigationCache.navigateToPage) {
-                console.log('Sistema de cache detectado - desabilitando para navegação direta');
-                window.navigationCache.navigateToPage = null;
-            }
         });
     </script>
 

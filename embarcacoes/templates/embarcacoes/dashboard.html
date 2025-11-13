@@ -4,149 +4,7 @@
 {% block title %}Dashboard - ARITANA{% endblock %}
 
 {% block content %}
-<!-- Dashboard Principal -->
-<div class="dashboard-container">
-        <div class="row">
-            <!-- Estatísticas Premium -->
-            <div class="col-12 mb-5">
-                <div class="row g-4">
-                    <div class="col-lg-4 col-md-6">
-                        <div class="stat-card animate-fade-in-up" style="animation-delay: 0.1s;">
-                            <div class="stat-number stat-total">{{ total_embarcacoes }}</div>
-                            <div class="stat-label">
-                                <i class="fas fa-ship me-2"></i>Total de Embarcações
-                            </div>
-                            <div class="stat-description">Monitoramento completo da região</div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div class="stat-card animate-fade-in-up" style="animation-delay: 0.2s;">
-                            <div class="stat-number stat-legal">{{ embarcacoes_legais }}</div>
-                            <div class="stat-label">
-                                <i class="fas fa-check-circle me-2"></i>Embarcaciones Legais
-                            </div>
-                            <div class="stat-description">Em conformidade com a legislação</div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div class="stat-card animate-fade-in-up" style="animation-delay: 0.3s;">
-                            <div class="stat-number stat-illegal">{{ embarcacoes_ilegais }}</div>
-                            <div class="stat-label">
-                                <i class="fas fa-exclamation-triangle me-2"></i>Embarcaciones Ilegais
-                            </div>
-                            <div class="stat-description">Requerem atenção das autoridades</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Upload Premium -->
-            <div class="col-12 mb-5">
-                <div class="card animate-fade-in-up" style="animation-delay: 0.4s;">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-cloud-upload-alt me-2"></i>
-                            Análise Inteligente de Embarcações
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted mb-4">
-                            <i class="fas fa-brain me-2"></i>
-                            Carregue uma imagem da embarcação para análise automática de legalidade usando inteligência artificial
-                        </p>
-                        
-                        <div class="upload-area-premium" id="uploadArea" onclick="redirecionarParaUpload()">
-                            <div class="upload-placeholder">
-                                <div class="upload-icon">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                </div>
-                                <h6 class="upload-title">Clique aqui para fazer upload de imagem</h6>
-                                <p class="upload-subtitle">Você será redirecionado para a página de upload</p>
-                                <div class="upload-info">
-                                    <span class="badge badge-info me-2">PNG</span>
-                                    <span class="badge badge-info me-2">JPG</span>
-                                    <span class="badge badge-info me-2">JPEG</span>
-                                    <span class="badge badge-warning">Máx. 20MB</span>
-                                </div>
-                            </div>
-                        </div>
-                            
-                    </div>
-                </div>
-            </div>
-
-            <!-- Mapa de Localizações - Largura Completa -->
-            <div class="col-12 mb-4">
-                <div class="card fade-in">
-                    <div class="card-header">
-                        <h5><i class="fas fa-map-marked-alt"></i> Mapa de Localizações</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted mb-3">Visualize as embarcações registradas na região de Belém</p>
-                        <div id="map" class="map-container mb-3"></div>
-                        <div class="text-center">
-                            <div class="legend-item">
-                                <span class="legend-color legend-legal"></span>
-                                <span>Embarcação Legal</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color legend-illegal"></span>
-                                <span>Alerta Ilegal</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Gráficos e Estatísticas -->
-        <div class="row">
-            <!-- Primeira linha: Gráfico de Legalidade e Regional -->
-            <div class="col-12 col-lg-5 col-xl-4 mb-4">
-                <div class="card fade-in h-100">
-                    <div class="card-header">
-                        <h5><i class="fas fa-chart-pie"></i> Distribuição de Legalidade</h5>
-                    </div>
-                    <div class="card-body d-flex flex-column">
-                        <p class="text-muted small mb-3">Proporção entre embarcações legais e ilegais identificadas</p>
-                        <div class="chart-container flex-grow-1">
-                            <canvas id="legalityChart"></canvas>
-                        </div>
-                        <div class="text-center mt-3">
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <div class="stat-number stat-legal" style="font-size: 1.8rem;">{{ embarcacoes_legais }}</div>
-                                    <small class="text-muted d-block">Legais</small>
-                                </div>
-                                <div class="col-6">
-                                    <div class="stat-number stat-illegal" style="font-size: 1.8rem;">{{ embarcacoes_ilegais }}</div>
-                                    <small class="text-muted d-block">Ilegais</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-lg-7 col-xl-8 mb-4">
-                <div class="card fade-in h-100">
-                    <div class="card-header">
-                        <h5><i class="fas fa-chart-bar"></i> Análises por Região</h5>
-                    </div>
-                    <div class="card-body d-flex flex-column">
-                        <p class="text-muted small mb-3">Distribuição de análises legais e ilegais por região</p>
-                        <div class="chart-container flex-grow-1">
-                            <canvas id="regionChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Gráfico Temporal removido para simplificar interface -->
-    </div>
-</div>
-<!-- Fim Dashboard Principal -->
+    {% include 'embarcacoes/partials/dashboard_main.html' %}
 {% endblock %}
 
 {% block extra_js %}
@@ -198,7 +56,7 @@ function showLoadingIndicator() {
     }
     
     // Adicionar aos gráficos
-    const chartsContainer = document.querySelector('#principal .row:last-child');
+    const chartsContainer = document.getElementById('dashboard-charts');
     if (chartsContainer) {
         chartsContainer.insertAdjacentHTML('beforeend', loadingHtml);
     }
@@ -216,33 +74,7 @@ function redirecionarParaUpload() {
 
 // Upload de Arquivo
 function initializeUpload() {
-    // Não precisa mais de lógica complexa - apenas redireciona
     console.log('Upload configurado para redirecionar para /upload-page/');
-    
-    function handleFileSelection(file) {
-        if (!file.type.startsWith('image/')) {
-            alert('Por favor, selecione apenas arquivos de imagem.');
-            return;
-        }
-        
-        if (file.size > 20 * 1024 * 1024) {
-            alert('Arquivo muito grande. Máximo 20MB.');
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            uploadArea.innerHTML = `
-                <div class="text-center">
-                    <img src="${e.target.result}" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 10px;">
-                    <p class="text-success mt-2"><i class="fas fa-check-circle"></i> Imagem selecionada: ${file.name}</p>
-                    <small class="text-muted">${(file.size / 1024 / 1024).toFixed(2)} MB</small>
-                </div>
-            `;
-            uploadDetails.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    }
 }
 
 // Inicializar Mapa
@@ -250,20 +82,16 @@ function initializeMap() {
     const mapContainer = document.getElementById('map');
     if (!mapContainer) return;
     
-    // Limpar indicador de carregamento
     mapContainer.innerHTML = '';
     
-    // Criar mapa com coordenadas padrão (será ajustado quando os dados chegarem)
-    const map = L.map('map').setView([-1.4558, -48.5044], 10); // Belém, PA
+    const map = L.map('map').setView([-1.4558, -48.5044], 10);
     
-    // Usar tiles mais leves para melhor performance
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 18,
         maxNativeZoom: 17
     }).addTo(map);
     
-    // Carregar dados das embarcações com timeout
     const fetchPromise = fetch('{% url "dados_mapa_json" %}');
     const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Timeout')), 5000)
@@ -273,11 +101,9 @@ function initializeMap() {
         .then(response => response.json())
         .then(data => {
             if (data.embarcacoes && data.embarcacoes.length > 0) {
-                // Limitar número de marcadores para melhor performance
                 const maxMarkers = 50;
                 const embarcacoes = data.embarcacoes.slice(0, maxMarkers);
                 
-                // Calcular limites das coordenadas para ajustar o mapa
                 const latitudes = embarcacoes.map(e => parseFloat(e.latitude));
                 const longitudes = embarcacoes.map(e => parseFloat(e.longitude));
                 
@@ -286,24 +112,16 @@ function initializeMap() {
                 const minLng = Math.min(...longitudes);
                 const maxLng = Math.max(...longitudes);
                 
-                // Criar bounds para ajustar o zoom
                 const bounds = [[minLat, minLng], [maxLat, maxLng]];
-                
-                // Ajustar o mapa para mostrar todos os pontos
                 map.fitBounds(bounds, {padding: [20, 20]});
                 
-                // Adicionar marcadores em batch para melhor performance
                 addMarkersInBatch(map, embarcacoes);
-                
-                console.log(`Mapa carregado com ${embarcacoes.length} embarcações`);
             }
             
-            // Adicionar legenda
             addMapLegend(map);
         })
         .catch(error => {
             console.error('Erro ao carregar dados do mapa:', error);
-            // Mostrar mensagem de erro no mapa
             mapContainer.innerHTML = `
                 <div class="text-center py-5">
                     <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
@@ -314,7 +132,6 @@ function initializeMap() {
         });
 }
 
-// Adicionar marcadores em batch para melhor performance
 function addMarkersInBatch(map, embarcacoes) {
     const batchSize = 10;
     let index = 0;
@@ -330,7 +147,6 @@ function addMarkersInBatch(map, embarcacoes) {
         index = endIndex;
         
         if (index < embarcacoes.length) {
-            // Usar requestAnimationFrame para não bloquear a UI
             requestAnimationFrame(addBatch);
         }
     }
@@ -338,7 +154,6 @@ function addMarkersInBatch(map, embarcacoes) {
     addBatch();
 }
 
-// Adicionar marcador individual
 function addMarker(map, embarcacao) {
     let color, icon;
     
@@ -356,7 +171,6 @@ function addMarker(map, embarcacao) {
             icon = '❓';
     }
     
-    // Criar marcador personalizado
     const marker = L.circleMarker([embarcacao.latitude, embarcacao.longitude], {
         color: color,
         fillColor: color,
@@ -365,7 +179,6 @@ function addMarker(map, embarcacao) {
         weight: 2
     }).addTo(map);
     
-    // Adicionar popup simplificado
     marker.bindPopup(`
         <div style="min-width: 180px; text-align: center;">
             <div style="font-size: 20px; margin-bottom: 5px;">${icon}</div>
@@ -380,10 +193,9 @@ function addMarker(map, embarcacao) {
     `);
 }
 
-// Adicionar legenda do mapa
 function addMapLegend(map) {
     const legend = L.control({position: 'bottomright'});
-    legend.onAdd = function (map) {
+    legend.onAdd = function () {
         const div = L.DomUtil.create('div', 'info legend');
         div.style.backgroundColor = 'white';
         div.style.padding = '8px';
@@ -409,18 +221,15 @@ function addMapLegend(map) {
     legend.addTo(map);
 }
 
-// Inicializar Gráficos
 function initializeCharts() {
-    const chartsContainer = document.querySelector('#principal .row:last-child');
+    const chartsContainer = document.getElementById('dashboard-charts');
     if (!chartsContainer) return;
     
-    // Limpar indicador de carregamento
     const loadingIndicator = chartsContainer.querySelector('#loading-indicator');
     if (loadingIndicator) {
         loadingIndicator.remove();
     }
     
-    // Timeout para carregamento dos gráficos
     const fetchPromise = fetch('{% url "dados_graficos_json" %}');
     const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Timeout')), 5000)
@@ -429,7 +238,6 @@ function initializeCharts() {
     Promise.race([fetchPromise, timeoutPromise])
         .then(response => response.json())
         .then(data => {
-            // Criar gráficos com animação suave
             createLegalityChart(data.legalidade);
             
             if (data.regional.meses.length > 0) {
@@ -438,7 +246,6 @@ function initializeCharts() {
         })
         .catch(error => {
             console.error('Erro ao carregar dados dos gráficos:', error);
-            // Mostrar mensagem de erro
             const chartContainers = document.querySelectorAll('#legalityChart, #regionChart');
             chartContainers.forEach(container => {
                 container.innerHTML = `
@@ -451,7 +258,6 @@ function initializeCharts() {
         });
 }
 
-// Criar gráfico de legalidade
 function createLegalityChart(legalidadeData) {
     const ctx = document.getElementById('legalityChart');
     if (!ctx) return;
@@ -462,7 +268,7 @@ function createLegalityChart(legalidadeData) {
             labels: ['Embarcações Legais', 'Embarcações Ilegais'],
             datasets: [{
                 data: [legalidadeData.legais, legalidadeData.ilegais],
-                backgroundColor: ['rgba(74, 139, 122, 0.8)', 'rgba(220, 38, 38, 0.8)'], // Verde água e vermelho da logo ARITANA
+                backgroundColor: ['rgba(74, 139, 122, 0.8)', 'rgba(220, 38, 38, 0.8)'],
                 borderWidth: 0,
                 hoverOffset: 4
             }]
@@ -483,7 +289,6 @@ function createLegalityChart(legalidadeData) {
     });
 }
 
-// Criar gráfico regional
 function createRegionalChart(regionalData) {
     const ctx = document.getElementById('regionChart');
     if (!ctx) return;
@@ -496,13 +301,13 @@ function createRegionalChart(regionalData) {
                 {
                     label: 'Legais',
                     data: regionalData.legais,
-                    backgroundColor: 'rgba(74, 139, 122, 0.8)', // Verde água da logo ARITANA
+                    backgroundColor: 'rgba(74, 139, 122, 0.8)',
                     borderRadius: 4
                 },
                 {
                     label: 'Ilegais',
                     data: regionalData.ilegais,
-                    backgroundColor: 'rgba(220, 38, 38, 0.8)', // Vermelho da logo ARITANA
+                    backgroundColor: 'rgba(220, 38, 38, 0.8)',
                     borderRadius: 4
                 }
             ]
@@ -536,25 +341,19 @@ function createRegionalChart(regionalData) {
     });
 }
 
-// Funcionalidade das Abas
 function initializeTabs() {
     const tabs = document.querySelectorAll('[data-bs-toggle="tab"]');
     tabs.forEach(tab => {
-        tab.addEventListener('click', function (e) {
-            // Remover classe active de todos os botões
+        tab.addEventListener('click', function () {
             tabs.forEach(t => {
                 t.classList.remove('active', 'btn-success');
                 t.classList.add('btn-outline-primary', 'btn-outline-success');
             });
             
-            // Adicionar classe active no botão clicado
             this.classList.remove('btn-outline-primary', 'btn-outline-success');
             this.classList.add('active', 'btn-success');
             
             const target = this.getAttribute('data-bs-target');
-            console.log(`Aba ativada: ${target}`);
-            
-            // Feedback visual
             showTabNotification(target);
         });
     });
@@ -572,9 +371,12 @@ function showTabNotification(target) {
         case '#ambiental':
             message = '🌿 Informações ambientais legais';
             break;
+        default:
+            message = '';
     }
     
-    // Criar toast de notificação
+    if (!message) return;
+    
     const toastHtml = `
         <div class="toast align-items-center text-white bg-success border-0" role="alert">
             <div class="d-flex">
@@ -584,7 +386,6 @@ function showTabNotification(target) {
         </div>
     `;
     
-    // Adicionar toast ao DOM
     let toastContainer = document.getElementById('toastContainer');
     if (!toastContainer) {
         toastContainer = document.createElement('div');
@@ -597,5 +398,57 @@ function showTabNotification(target) {
     const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
     toast.show();
 }
+
+function loadLeaflet() {
+    if (window.L) {
+        return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+        const existingScript = document.querySelector('script[data-leaflet]');
+        if (existingScript) {
+            existingScript.addEventListener('load', resolve);
+            existingScript.addEventListener('error', reject);
+            return;
+        }
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        link.integrity = 'sha256-sA+4J8AAJeWo7kPFAm27RjTvA1rNq6pM/2GmO6pH7k8=';
+        link.crossOrigin = '';
+        document.head.appendChild(link);
+        
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.integrity = 'sha256-VuZ8IVLceXvC0JdeQ8AG1rruW//4QoBsM+d2y26tnAA=';
+        script.crossOrigin = '';
+        script.defer = true;
+        script.dataset.leaflet = 'true';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+function loadChartJS() {
+    if (window.Chart) {
+        return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+        const existingScript = document.querySelector('script[data-chartjs]');
+        if (existingScript) {
+            existingScript.addEventListener('load', resolve);
+            existingScript.addEventListener('error', reject);
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js';
+        script.defer = true;
+        script.dataset.chartjs = 'true';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
 </script>
 {% endblock %}
+

@@ -228,6 +228,46 @@ function animarContagem(elementId, valorFinal) {
     }, 50);
 }
 
+function gerarBadgeStatus(embarcacao) {
+    const tipo = (embarcacao.classificacao || '').toLowerCase();
+    const progresso = embarcacao.progresso || 0;
+    const mensagem = embarcacao.mensagem_status || '';
+
+    switch (tipo) {
+        case 'processando':
+            return `<span class="badge bg-warning text-dark">
+                        <i class="fas fa-spinner fa-spin me-1"></i>
+                        Processando ${progresso ? `(${progresso}%)` : ''}
+                    </span>`;
+        case 'pendente':
+            return `<span class="badge bg-secondary text-dark" style="background-color:#e5e7eb !important; color:#374151 !important;">
+                        <i class="fas fa-hourglass-half me-1"></i>Pendente
+                    </span>`;
+        case 'erro':
+            return `<span class="badge bg-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Erro
+                    </span>`;
+        case 'aprovada':
+        case 'legal':
+            return `<span class="badge bg-success">
+                        <i class="fas fa-check-circle me-1"></i>Legal
+                    </span>`;
+        case 'rejeitada':
+        case 'ilegal':
+            return `<span class="badge bg-danger">
+                        <i class="fas fa-times-circle me-1"></i>Ilegal
+                    </span>`;
+        case 'analisada':
+            return `<span class="badge bg-info text-dark" style="background-color:#dbeafe !important; color:#1e3a8a !important;">
+                        <i class="fas fa-search me-1"></i>Analisada
+                    </span>`;
+        default:
+            return `<span class="badge bg-secondary text-dark" style="background-color:#d1d5db !important; color:#374151 !important;">
+                        <i class="fas fa-info-circle me-1"></i>${embarcacao.status_local || 'Desconhecido'}
+                    </span>`;
+    }
+}
+
 function atualizarTabela(embarcacoes) {
     const tbody = document.querySelector('#tabela-embarcacoes tbody');
     if (!tbody) return;
@@ -235,7 +275,7 @@ function atualizarTabela(embarcacoes) {
     if (embarcacoes.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center py-4">
+                <td colspan="6" class="text-center py-4">
                     <i class="fas fa-ship fa-3x text-muted mb-3"></i>
                     <h5 class="text-muted">Nenhuma embarcação encontrada</h5>
                     <p class="text-muted">Tente ajustar os filtros de busca.</p>
@@ -251,15 +291,42 @@ function atualizarTabela(embarcacoes) {
     embarcacoes.forEach(embarcacao => {
         const row = document.createElement('tr');
         row.className = 'embarcacao-row';
-        row.setAttribute('data-tipo', embarcacao.classificacao ? embarcacao.classificacao.toLowerCase() : '');
+        const classificacaoLower = embarcacao.classificacao ? embarcacao.classificacao.toLowerCase() : '';
+        row.setAttribute('data-tipo', classificacaoLower);
         row.setAttribute('data-regiao', embarcacao.regiao || '');
         row.setAttribute('data-nome', embarcacao.localidade ? embarcacao.localidade.toLowerCase() : '');
         row.setAttribute('data-id', embarcacao.id || '');
         row.setAttribute('data-latitude', embarcacao.latitude || '');
         row.setAttribute('data-longitude', embarcacao.longitude || '');
-        row.setAttribute('data-imagem', embarcacao.imagem_url || '');
+        const imagemPreferencial = embarcacao.imagem_processada_url || embarcacao.imagem_url;
+        row.setAttribute('data-imagem', imagemPreferencial || '');
+        row.setAttribute('data-imagem-local', embarcacao.imagem_url || '');
+        row.setAttribute('data-imagem-api', embarcacao.imagem_processada_url || (embarcacao.resultado_api && embarcacao.resultado_api.imagem_url) || '');
         row.setAttribute('data-data-cadastro', embarcacao.data_cadastro || '');
         row.setAttribute('data-data-foto', embarcacao.data_foto || '');
+        row.setAttribute('data-status-local', embarcacao.status_local || '');
+        row.setAttribute('data-mensagem-status', embarcacao.mensagem_status || '');
+        row.setAttribute('data-progresso', embarcacao.progresso || '');
+        row.setAttribute('data-classificacao', classificacaoLower);
+        row.setAttribute('data-origem', embarcacao.origem || 'api');
+        if (embarcacao.resultado_api && typeof embarcacao.resultado_api === 'object') {
+            row.setAttribute('data-api-classificacao', embarcacao.resultado_api.classificacao || '');
+            row.setAttribute('data-api-regiao', embarcacao.resultado_api.regiao || '');
+            row.setAttribute('data-api-localidade', embarcacao.resultado_api.localidade || '');
+            row.setAttribute('data-api-descricao', embarcacao.resultado_api.descricao || '');
+            row.setAttribute('data-api-titulo', embarcacao.resultado_api.titulo || '');
+            row.setAttribute('data-api-imagem', embarcacao.resultado_api.imagem_url || '');
+        } else {
+            row.setAttribute('data-api-classificacao', '');
+            row.setAttribute('data-api-regiao', '');
+            row.setAttribute('data-api-localidade', '');
+            row.setAttribute('data-api-descricao', '');
+            row.setAttribute('data-api-titulo', '');
+            row.setAttribute('data-api-imagem', '');
+        }
+        row.setAttribute('data-resource-id', embarcacao.resource_id || '');
+        row.setAttribute('data-mensagem-api', embarcacao.mensagem_status || '');
+        row.setAttribute('data-job-id', embarcacao.job_id || '');
         
         row.innerHTML = `
             <td>
@@ -269,39 +336,21 @@ function atualizarTabela(embarcacoes) {
                 <strong style="color: #1f2937;">${embarcacao.localidade || 'N/A'}</strong>
             </td>
             <td>
-                <span class="badge ${embarcacao.classificacao && embarcacao.classificacao.toLowerCase() === 'legal' ? 'bg-success' : 'bg-danger'}">
-                    ${embarcacao.classificacao && embarcacao.classificacao.toLowerCase() === 'legal' ? 'Legal' : 'Ilegal'}
-                </span>
+                ${gerarBadgeStatus(embarcacao)}
             </td>
             <td>
                 <span class="badge bg-secondary" style="background-color: #6b7280 !important;">
                     ${embarcacao.regiao || 'N/A'}
                 </span>
             </td>
-            <td class="text-center">
-                ${embarcacao.imagem_url ? `
-                    <button class="btn btn-sm" 
-                            onclick="verImagem('${embarcacao.imagem_url}', '${embarcacao.localidade || 'N/A'}')"
-                            title="Ver imagem"
-                            style="background: #f3f4f6; border: 1px solid #d1d5db; color: #374151;">
-                        <i class="fas fa-image"></i>
-                    </button>
-                ` : `
-                    <span class="text-muted">
-                        <i class="fas fa-ban"></i>
-                    </span>
-                `}
-            </td>
             <td>
-                <div style="min-width: 200px;">
-                    <div style="margin-bottom: 4px;">
-                        <i class="fas fa-calendar-plus" style="width: 16px; color: #9ca3af;"></i>
-                        <span style="font-size: 0.85rem; color: #374151;">${embarcacao.data_cadastro ? formatarDataBrasil(embarcacao.data_cadastro) : 'N/A'}</span>
+                <div style="min-width: 180px;">
+                    <div style="font-size: 0.875rem; color: #374151;">
+                        <strong>Cadastro:</strong> ${embarcacao.data_cadastro ? formatarDataBrasil(embarcacao.data_cadastro) : 'N/A'}
                     </div>
                     ${embarcacao.data_foto ? `
-                        <div>
-                            <i class="fas fa-camera" style="width: 16px; color: #9ca3af;"></i>
-                            <span style="font-size: 0.85rem; color: #374151;">${formatarDataBrasil(embarcacao.data_foto)}</span>
+                        <div style="font-size: 0.875rem; color: #6b7280; margin-top: 4px;">
+                            <strong>Foto:</strong> ${formatarDataBrasil(embarcacao.data_foto)}
                         </div>
                     ` : ''}
                 </div>
@@ -404,7 +453,7 @@ function mostrarLoading() {
     
     tbody.innerHTML = `
         <tr>
-            <td colspan="7" class="text-center py-4">
+            <td colspan="6" class="text-center py-4">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Carregando...</span>
                 </div>
@@ -424,7 +473,7 @@ function mostrarErro(mensagem) {
     
     tbody.innerHTML = `
         <tr>
-            <td colspan="7" class="text-center py-4">
+            <td colspan="6" class="text-center py-4">
                 <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
                 <h5 class="text-warning">Erro ao carregar dados</h5>
                 <p class="text-muted">${mensagem}</p>
@@ -438,15 +487,43 @@ function mostrarErro(mensagem) {
 
 // Funções para modais (mantidas do código original)
 function verDetalhes(id) {
+    console.log('verDetalhes chamado com ID:', id);
     const row = document.querySelector(`[data-id="${id}"]`);
-    if (!row) return;
+    if (!row) {
+        console.error('Linha não encontrada para ID:', id);
+        alert('Erro: Não foi possível encontrar os dados da embarcação.');
+        return;
+    }
+    console.log('Linha encontrada:', row);
     
     const modalBody = document.getElementById('modal-body');
-    const imagemUrl = row.dataset.imagem;
+    const imagemUrl = row.dataset.imagem || row.dataset.imagemApi || row.dataset.imagemLocal;
     const latitude = row.dataset.latitude;
     const longitude = row.dataset.longitude;
     const dataCadastro = row.dataset.dataCadastro;
     const dataFoto = row.dataset.dataFoto;
+    const statusLocal = row.dataset.statusLocal || '';
+    const mensagemStatus = row.dataset.mensagemStatus || '';
+    const progresso = parseInt(row.dataset.progresso || '0', 10) || 0;
+    const classificacao = row.dataset.classificacao || '';
+    const origem = row.dataset.origem || 'api';
+    const apiClassificacao = row.dataset.apiClassificacao || '';
+    const apiDescricao = row.dataset.apiDescricao || '';
+    const apiTitulo = row.dataset.apiTitulo || row.cells[1].textContent;
+    const resourceId = row.dataset.resourceId || '';
+    const jobId = row.dataset.jobId || '';
+
+    const badgeHtml = gerarBadgeStatus({
+        classificacao,
+        progresso,
+        mensagem_status: mensagemStatus,
+        status_local: statusLocal
+    });
+    
+    // Escapar aspas para uso em atributos HTML
+    const imagemUrlSafe = imagemUrl ? imagemUrl.replace(/'/g, '&apos;').replace(/"/g, '&quot;') : '';
+    const imagemApiSafe = (row.dataset.imagemApi || '').replace(/'/g, '&apos;').replace(/"/g, '&quot;');
+    const tituloSafe = apiTitulo.replace(/'/g, '&apos;').replace(/"/g, '&quot;');
     
     modalBody.innerHTML = `
         <div class="row">
@@ -458,10 +535,16 @@ function verDetalhes(id) {
                     <div class="card-body">
                         <p><strong><i class="fas fa-hashtag me-1"></i>ID:</strong> ${id}</p>
                         <p><strong><i class="fas fa-map-marker-alt me-1"></i>Localidade:</strong> ${row.cells[1].textContent}</p>
-                        <p><strong><i class="fas fa-tag me-1"></i>Classificação:</strong> ${row.cells[2].innerHTML}</p>
+                        <p><strong><i class="fas fa-tag me-1"></i>Status Local:</strong> ${statusLocal || 'N/A'}</p>
+                        <div class="mb-2">${badgeHtml}</div>
+                        ${apiClassificacao ? `<p><strong><i class="fas fa-robot me-1"></i>Classificação API:</strong> ${apiClassificacao}</p>` : ''}
                         <p><strong><i class="fas fa-globe me-1"></i>Região:</strong> ${row.cells[3].textContent}</p>
                         <p><strong><i class="fas fa-calendar me-1"></i>Data Cadastro:</strong> ${dataCadastro}</p>
                         ${dataFoto ? `<p><strong><i class="fas fa-camera me-1"></i>Data Foto:</strong> ${dataFoto}</p>` : ''}
+                        ${mensagemStatus ? `<p><strong><i class="fas fa-comment-dots me-1"></i>Mensagem:</strong> ${mensagemStatus}</p>` : ''}
+                        ${jobId ? `<p><strong><i class="fas fa-tasks me-1"></i>Job ID:</strong> ${jobId}</p>` : ''}
+                        ${resourceId ? `<p><strong><i class="fas fa-database me-1"></i>Resource ID:</strong> ${resourceId}</p>` : ''}
+                        ${apiDescricao ? `<p><strong><i class="fas fa-align-left me-1"></i>Descrição API:</strong> ${apiDescricao}</p>` : ''}
                     </div>
                 </div>
             </div>
@@ -477,12 +560,25 @@ function verDetalhes(id) {
                             <div><strong>Longitude:</strong> ${longitude}</div>
                         </div>
                         ${imagemUrl ? `
-                            <div class="text-center">
-                                <button class="btn btn-primary" onclick="verImagem('${imagemUrl}', '${row.cells[1].textContent}')">
+                            <div class="text-center d-grid gap-2">
+                                <button class="btn btn-primary" onclick="verImagem('${imagemUrlSafe}', '${tituloSafe}')">
                                     <i class="fas fa-image me-1"></i>Ver Imagem
                                 </button>
+                                <a class="btn btn-outline-primary" href="${imagemUrl}" download>
+                                    <i class="fas fa-download me-1"></i>Baixar Imagem
+                                </a>
                             </div>
                         ` : '<p class="text-muted"><i class="fas fa-ban me-1"></i>Nenhuma imagem disponível</p>'}
+                        ${row.dataset.imagemApi && row.dataset.imagemApi !== imagemUrl ? `
+                            <div class="text-center d-grid gap-2 mt-2">
+                                <button class="btn btn-outline-primary btn-sm" onclick="verImagem('${imagemApiSafe}', '${tituloSafe} - Processada')">
+                                    <i class="fas fa-microchip me-1"></i>Ver Imagem Processada
+                                </button>
+                                <a class="btn btn-outline-primary btn-sm" href="${row.dataset.imagemApi || ''}" download>
+                                    <i class="fas fa-download me-1"></i>Baixar Imagem Processada
+                                </a>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             </div>
@@ -501,51 +597,134 @@ function verDetalhes(id) {
         </div>
     `;
     
-    // Inicializar mini mapa
+    // Inicializar mini mapa (apenas se Leaflet estiver disponível)
     setTimeout(() => {
         const lat = parseFloat(latitude);
         const lng = parseFloat(longitude);
         
-        const map = L.map('mini-map').setView([lat, lng], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+        // Verificar se Leaflet está carregado
+        if (typeof L === 'undefined') {
+            console.warn('Leaflet não está carregado, mini-mapa não será exibido');
+            const miniMapContainer = document.getElementById('mini-map');
+            if (miniMapContainer) {
+                miniMapContainer.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-map-marked-alt fa-3x mb-3"></i>
+                            <p>Mini-mapa indisponível</p>
+                            <small>Coordenadas: ${latitude}, ${longitude}</small>
+                        </div>
+                    </div>
+                `;
+            }
+            return;
+        }
         
-        // Marcador personalizado
-        const marker = L.circleMarker([lat, lng], {
-            color: row.dataset.tipo === 'legal' ? '#28a745' : '#dc3545',
-            fillColor: row.dataset.tipo === 'legal' ? '#28a745' : '#dc3545',
-            fillOpacity: 0.8,
-            radius: 15,
-            weight: 3
-        }).addTo(map);
-        
-        marker.bindPopup(`
-            <div style="text-align: center;">
-                <h6 style="margin: 0 0 10px 0;">${row.cells[1].textContent}</h6>
-                ${row.cells[2].innerHTML}
-                <div style="margin-top: 10px; font-size: 12px; color: #666;">
-                    <strong>Coordenadas:</strong><br>
-                    ${latitude}, ${longitude}
+        try {
+            const map = L.map('mini-map').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Marcador personalizado
+            const marker = L.circleMarker([lat, lng], {
+                color: row.dataset.tipo === 'legal' ? '#28a745' : '#dc3545',
+                fillColor: row.dataset.tipo === 'legal' ? '#28a745' : '#dc3545',
+                fillOpacity: 0.8,
+                radius: 15,
+                weight: 3
+            }).addTo(map);
+            
+            const localidade = row.cells[1] ? row.cells[1].textContent : 'N/A';
+            const statusBadge = row.cells[2] ? row.cells[2].innerHTML : '';
+            
+            marker.bindPopup(`
+                <div style="text-align: center;">
+                    <h6 style="margin: 0 0 10px 0;">${localidade}</h6>
+                    ${statusBadge}
+                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                        <strong>Coordenadas:</strong><br>
+                        ${latitude}, ${longitude}
+                    </div>
                 </div>
-            </div>
-        `).openPopup();
+            `).openPopup();
+        } catch (error) {
+            console.error('Erro ao criar mini-mapa:', error);
+            const miniMapContainer = document.getElementById('mini-map');
+            if (miniMapContainer) {
+                miniMapContainer.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+                            <p>Erro ao carregar mapa</p>
+                            <small>Coordenadas: ${latitude}, ${longitude}</small>
+                        </div>
+                    </div>
+                `;
+            }
+        }
     }, 100);
     
     // Mostrar modal
-    new bootstrap.Modal(document.getElementById('modalDetalhes')).show();
+    const modalElement = document.getElementById('modalDetalhes');
+    if (!modalElement) {
+        console.error('Modal #modalDetalhes não encontrado no DOM');
+        alert('Erro: Modal de detalhes não encontrado.');
+        return;
+    }
+    
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap não está disponível');
+        alert('Erro: Bootstrap não carregado.');
+        return;
+    }
+    
+    console.log('Abrindo modal de detalhes...');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+    console.log('Modal aberto com sucesso');
 }
 
 function verImagem(url, titulo) {
+    console.log('verImagem chamada com:', { url, titulo });
+    
     const imgElement = document.getElementById('imagem-embarcacao');
     const tituloElement = document.getElementById('imagem-titulo');
     const linkElement = document.getElementById('link-imagem-original');
+    
+    if (!imgElement) {
+        console.error('Elemento #imagem-embarcacao não encontrado');
+        alert('Erro: Elemento de imagem não encontrado no DOM.');
+        return;
+    }
+    if (!tituloElement) {
+        console.error('Elemento #imagem-titulo não encontrado');
+        alert('Erro: Elemento de título não encontrado no DOM.');
+        return;
+    }
+    if (!linkElement) {
+        console.error('Elemento #link-imagem-original não encontrado');
+        alert('Erro: Elemento de link não encontrado no DOM.');
+        return;
+    }
+    
+    if (!url) {
+        console.error('URL da imagem não fornecida');
+        alert('Erro: URL da imagem não foi fornecida.');
+        return;
+    }
     
     // Converter HTTP para HTTPS se necessário (Railway redireciona)
     if (url && url.startsWith('http://')) {
         url = url.replace('http://', 'https://');
         console.log('URL convertida para HTTPS:', url);
     }
+    if (url && url.startsWith('/')) {
+        url = `${window.location.origin}${url}`;
+        console.log('URL relativa convertida para absoluta:', url);
+    }
+    
+    console.log('URL final da imagem:', url);
     
     // Resetar imagem
     imgElement.src = '';
@@ -579,15 +758,42 @@ function verImagem(url, titulo) {
     imgElement.src = url;
     linkElement.href = url;
     
+    // Verificar se o modal existe
+    const modalElement = document.getElementById('modalImagem');
+    if (!modalElement) {
+        console.error('Modal #modalImagem não encontrado');
+        alert('Erro: Modal de imagem não encontrado no DOM.');
+        return;
+    }
+    
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap não está disponível');
+        alert('Erro: Bootstrap não carregado.');
+        return;
+    }
+    
+    console.log('Abrindo modal de imagem...');
     // Abrir modal
-    new bootstrap.Modal(document.getElementById('modalImagem')).show();
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+    console.log('Modal de imagem aberto com sucesso');
 }
 
-// Exportar funções globalmente
+// Exportar funções globalmente (sobrescrever funções do dashboard.js)
 window.formatarDataBrasil = formatarDataBrasil;
 window.verImagem = verImagem;
 window.verDetalhes = verDetalhes;
 window.verNoMapa = verNoMapa;
+
+// Log para confirmar carregamento
+console.log('✅ historico-optimized.js carregado com sucesso');
+console.log('📦 Funções globais exportadas:', {
+    formatarDataBrasil: typeof window.formatarDataBrasil,
+    verImagem: typeof window.verImagem,
+    verDetalhes: typeof window.verDetalhes,
+    verNoMapa: typeof window.verNoMapa
+});
+console.log('🔄 Sobrescrevendo funções do dashboard.js para o histórico');
 
 function verNoMapa(latitude, longitude, titulo) {
     const modalBody = document.getElementById('coordenadas-info');
@@ -628,3 +834,55 @@ function verNoMapa(latitude, longitude, titulo) {
     
     new bootstrap.Modal(document.getElementById('modalMapa')).show();
 }
+
+/**
+ * Inicializa monitoramento de jobs em processamento
+ */
+function iniciarMonitoramentoJobs() {
+    // Verificar se asyncProcessor está disponível
+    if (typeof asyncProcessor === 'undefined') {
+        console.warn('AsyncProcessor não disponível');
+        return;
+    }
+
+    // Buscar jobs em processamento
+    fetch('/api/jobs/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.jobs && data.jobs.length > 0) {
+                console.log(`Iniciando monitoramento de ${data.jobs.length} job(s) em processamento`);
+                
+                // Adicionar cada job ao monitor
+                data.jobs.forEach(job => {
+                    if (job.job_id && job.status_analise !== 'analisada' && job.status_analise !== 'erro') {
+                        asyncProcessor.addJob(job.job_id, {
+                            onProgress: (statusData) => {
+                                console.log(`Job ${job.job_id}: ${statusData.progresso}%`);
+                                // Recarregar tabela para mostrar progresso atualizado
+                                carregarDadosHistorico(currentPage);
+                            },
+                            onSuccess: () => {
+                                console.log(`Job ${job.job_id} concluído!`);
+                                // Recarregar tabela
+                                carregarDadosHistorico(currentPage);
+                            },
+                            onError: (error) => {
+                                console.error(`Job ${job.job_id} falhou:`, error);
+                                // Recarregar tabela
+                                carregarDadosHistorico(currentPage);
+                            }
+                        });
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao buscar jobs em processamento:', error);
+        });
+}
+
+// Iniciar monitoramento quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    // Aguardar 1 segundo para garantir que asyncProcessor está disponível
+    setTimeout(iniciarMonitoramentoJobs, 1000);
+});

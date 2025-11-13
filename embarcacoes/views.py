@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Count, Q
+from django.core.cache import cache
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
@@ -11,6 +12,195 @@ from .models import Embarcacao, ImagemEmbarcacao, AnaliseRegional, TipoEmbarcaca
 from .api_client import api_client
 
 logger = logging.getLogger(__name__)
+
+
+def _obter_classificacao_local(imagem):
+    """Deriva classificação para uploads locais conforme status/resultado."""
+    resultado = imagem.resultado_analise
+
+    if imagem.status_analise == StatusAnalise.ANALISADA and resultado:
+        if isinstance(resultado, list) and resultado:
+            primeiro = resultado[0]
+            classificacao = primeiro.get('classificacao') if isinstance(primeiro, dict) else None
+        elif isinstance(resultado, dict):
+            classificacao = resultado.get('classificacao')
+        else:
+            classificacao = None
+
+        if classificacao:
+            return str(classificacao).lower()
+        return 'analisada'
+
+    status_map = {
+        StatusAnalise.PROCESSANDO: 'processando',
+        StatusAnalise.PENDENTE: 'pendente',
+        StatusAnalise.ERRO: 'erro',
+        StatusAnalise.APROVADA: 'aprovada',
+        StatusAnalise.REJEITADA: 'rejeitada',
+    }
+    return status_map.get(imagem.status_analise, 'processando')
+
+
+def _normalizar_url(request, url):
+    if not url:
+        return None
+    url = str(url)
+    if url.startswith('http://') or url.startswith('https://'):
+        return url
+    return request.build_absolute_uri(url)
+
+
+def _formatar_upload_local(imagem, request):
+    resultado = imagem.resultado_analise
+    if isinstance(resultado, list) and resultado:
+        primeiro = resultado[0]
+        resultado = primeiro if isinstance(primeiro, dict) else {}
+    elif not isinstance(resultado, dict):
+        resultado = {}
+
+    imagem_processada_url = resultado.get('imagem_processada') or resultado.get('imagem_processada_url')
+
+    return {
+        'id': f'local_{imagem.id}',
+        'origem': 'local',
+        'localidade': imagem.titulo or imagem.embarcacao.nome or 'Upload Local',
+        'classificacao': _obter_classificacao_local(imagem),
+        'regiao': imagem.embarcacao.regiao,
+        'data_cadastro': imagem.data_upload.isoformat(),
+        'data_foto': imagem.data_analise.isoformat() if imagem.data_analise else None,
+        'latitude': float(imagem.embarcacao.latitude) if imagem.embarcacao.latitude else None,
+        'longitude': float(imagem.embarcacao.longitude) if imagem.embarcacao.longitude else None,
+        'imagem_url': _normalizar_url(request, imagem.imagem.url) if imagem.imagem else None,
+        'imagem_processada_url': _normalizar_url(request, imagem_processada_url),
+        'job_id': imagem.job_id,
+        'progresso': imagem.progresso,
+        'status_local': imagem.get_status_analise_display(),
+        'mensagem_status': imagem.mensagem_status,
+        'resource_id': str(imagem.resource_id) if imagem.resource_id else None,
+        'resultado_api': resultado,
+    }
+
+
+def _processar_upload_imagem(request):
+    """Executa o fluxo de upload e disparo do processamento assíncrono."""
+    imagem = request.FILES.get('imagem')
+    titulo = request.POST.get('titulo', '')
+    descricao = request.POST.get('descricao', '')
+    regiao = request.POST.get('regiao', '')
+
+    localidade = request.POST.get('localidade', '')
+    if not localidade and regiao:
+        localidade = regiao
+
+    latitude = request.POST.get('latitude')
+    longitude = request.POST.get('longitude')
+
+    try:
+        latitude = float(latitude) if latitude else None
+    except (ValueError, TypeError):
+        latitude = None
+
+    try:
+        longitude = float(longitude) if longitude else None
+    except (ValueError, TypeError):
+        longitude = None
+
+    if not imagem:
+        messages.error(request, 'Nenhuma imagem foi selecionada.')
+        return {'success': False}
+
+    try:
+        embarcacao_padrao, _ = Embarcacao.objects.get_or_create(
+            id=1,
+            defaults={
+                'nome': 'Embarcação Padrão',
+                'tipo': TipoEmbarcacao.LEGAL,
+                'regiao': 'belem_centro',
+                'latitude': -1.4558,
+                'longitude': -48.5044,
+                'descricao': 'Embarcação padrão para upload de imagens'
+            }
+        )
+
+        imagem_obj = ImagemEmbarcacao.objects.create(
+            embarcacao=embarcacao_padrao,
+            imagem=imagem,
+            titulo=titulo,
+            descricao=descricao,
+            status_analise=StatusAnalise.PENDENTE
+        )
+
+        if not regiao or regiao.strip() == '':
+            regiao = 'Norte'
+
+        if not localidade or localidade.strip() == '':
+            localidade = regiao
+
+        if latitude is None:
+            latitude = -1.4558
+
+        if longitude is None:
+            longitude = -48.5044
+
+        data_foto = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+
+        if not titulo or titulo.strip() == '':
+            titulo = localidade or regiao or 'Embarcação'
+
+        if not descricao or descricao.strip() == '':
+            descricao = f'Upload em {datetime.now().strftime("%d/%m/%Y %H:%M")}'
+
+        try:
+            imagem.seek(0)
+        except Exception as seek_exc:
+            logger.warning("Não foi possível reposicionar ponteiro da imagem: %s", seek_exc)
+
+        logger.info(
+            "Enviando para API YOLO: regiao=%s, localidade=%s, lat=%s, lng=%s",
+            regiao,
+            localidade,
+            latitude,
+            longitude,
+        )
+        resultado = api_client.enviar_imagem_para_analise(
+            imagem,
+            titulo=titulo,
+            descricao=descricao,
+            regiao=regiao,
+            localidade=localidade,
+            latitude=latitude,
+            longitude=longitude,
+            data_foto=data_foto
+        )
+
+        logger.info("Resultado do envio: %s", resultado)
+
+        if resultado and 'job_id' in resultado:
+            imagem_obj.iniciar_processamento(
+                job_id=resultado['job_id'],
+                status_url=resultado.get('status_url'),
+                result_url=resultado.get('result_url')
+            )
+            messages.success(
+                request,
+                '✅ Imagem enviada com sucesso! Acompanhe o progresso no histórico.'
+            )
+            return {
+                'success': True,
+                'job_id': resultado['job_id'],
+                'imagem': imagem_obj,
+            }
+
+        erro_msg = f'API não retornou job_id. Resposta: {resultado}'
+        logger.error(erro_msg)
+        imagem_obj.marcar_erro_processamento(erro_msg)
+        messages.error(request, 'Erro ao enviar imagem para análise. API não retornou job_id válido.')
+        return {'success': False, 'job_id': None}
+
+    except Exception as exc:
+        logger.error("Erro no upload da imagem: %s", exc)
+        messages.error(request, f'Erro interno: {str(exc)}')
+        return {'success': False}
 
 
 def dashboard(request):
@@ -43,163 +233,29 @@ def dashboard(request):
     
     return render(request, 'embarcacoes/dashboard.html', context)
 
-def spa(request):
-    """View para Single Page Application"""
-    # Buscar dados da API externa para o dashboard
-    dados_api = api_client.get_dados_embarcacoes()
-    estatisticas_api = api_client.get_estatisticas_regionais()
-    
-    # Estatísticas da API ou valores padrão
-    if dados_api and 'embarcacoes' in dados_api:
-        embarcacoes = dados_api['embarcacoes']
-        total_embarcacoes = len(embarcacoes)
-        embarcacoes_legais = len([e for e in embarcacoes if e.get('classificacao', '').lower() == 'legal'])
-        embarcacoes_ilegais = len([e for e in embarcacoes if e.get('classificacao', '').lower() == 'ilegal'])
-    else:
-        total_embarcacoes = 0
-        embarcacoes_legais = 0
-        embarcacoes_ilegais = 0
-    
-    context = {
-        'total_embarcacoes': total_embarcacoes,
-        'embarcacoes_legais': embarcacoes_legais,
-        'embarcacoes_ilegais': embarcacoes_ilegais,
-        'api_connected': dados_api is not None,
-        'dados_embarcacoes_json': json.dumps(dados_api.get('embarcacoes', []) if dados_api else []),
-        'estatisticas_json': json.dumps(estatisticas_api) if estatisticas_api else '{}',
-    }
-    
-    return render(request, 'embarcacoes/spa.html', context)
-
-
 def upload_imagem(request):
     """View para upload de imagens com processamento assíncrono"""
     if request.method == 'POST':
-        imagem = request.FILES.get('imagem')
-        titulo = request.POST.get('titulo', '')
-        descricao = request.POST.get('descricao', '')
-        regiao = request.POST.get('regiao', '')
-        
-        # Se não especificou localidade, usar a própria região como localidade
-        localidade = request.POST.get('localidade', '')
-        if not localidade and regiao:
-            localidade = regiao  # Ex: "Centro" será tanto região quanto localidade
-        
-        # Obter coordenadas opcionais
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
-        
-        # Converter coordenadas para float se fornecidas
-        try:
-            latitude = float(latitude) if latitude else None
-        except (ValueError, TypeError):
-            latitude = None
-        
-        try:
-            longitude = float(longitude) if longitude else None
-        except (ValueError, TypeError):
-            longitude = None
-        
-        if imagem:
-            try:
-                # Criar ou obter embarcação padrão
-                embarcacao_padrao, created = Embarcacao.objects.get_or_create(
-                    id=1,
-                    defaults={
-                        'nome': 'Embarcação Padrão',
-                        'tipo': TipoEmbarcacao.LEGAL,
-                        'regiao': 'belem_centro',
-                        'latitude': -1.4558,
-                        'longitude': -48.5044,
-                        'descricao': 'Embarcação padrão para upload de imagens'
-                    }
-                )
-                
-                # Criar registro da imagem no banco local
-                imagem_obj = ImagemEmbarcacao.objects.create(
-                    embarcacao=embarcacao_padrao,
-                    imagem=imagem,
-                    titulo=titulo,
-                    descricao=descricao,
-                    status_analise=StatusAnalise.PENDENTE
-                )
-                
-                # Enviar para processamento na API FastAPI com TODOS os dados
-                # Seguindo EXATAMENTE o formato do curl que funciona
-                from datetime import datetime
-                
-                # SEMPRE enviar valores padrão (igual ao curl que funcionou)
-                if not regiao or regiao.strip() == '':
-                    regiao = 'Norte'  # Padrão
-                
-                if not localidade or localidade.strip() == '':
-                    localidade = regiao  # Usar região como localidade
-                
-                if not latitude:
-                    latitude = -1.4558  # Belém - coordenadas padrão
-                
-                if not longitude:
-                    longitude = -48.5044  # Belém - coordenadas padrão
-                
-                # SEMPRE enviar data_foto (obrigatório como no curl)
-                data_foto = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-                
-                # SEMPRE enviar titulo (mesmo que vazio, não None)
-                if not titulo or titulo.strip() == '':
-                    titulo = localidade or regiao or 'Embarcação'
-                
-                # SEMPRE enviar descricao (mesmo que vazio, não None)
-                if not descricao or descricao.strip() == '':
-                    descricao = f'Upload em {datetime.now().strftime("%d/%m/%Y %H:%M")}'
-                
-                logger.info(f"Enviando para API YOLO: regiao={regiao}, localidade={localidade}, lat={latitude}, lng={longitude}")
-                resultado = api_client.enviar_imagem_para_analise(
-                    imagem, 
-                    titulo=titulo,
-                    descricao=descricao,
-                    regiao=regiao,
-                    localidade=localidade,
-                    latitude=latitude,
-                    longitude=longitude,
-                    data_foto=data_foto
-                )
-                
-                logger.info(f"Resultado do envio: {resultado}")
-                
-                if resultado and 'job_id' in resultado:
-                    # Iniciar processamento assíncrono usando URLs da API
-                    imagem_obj.iniciar_processamento(
-                        job_id=resultado['job_id'],
-                        status_url=resultado.get('status_url'),  # ✅ Usar URL da API
-                        result_url=resultado.get('result_url')   # ✅ Usar URL da API
-                    )
-                    logger.info(f"Processamento iniciado - Job ID: {resultado['job_id']}, Status URL: {resultado.get('status_url')}")
-                    
-                    # Invalidar cache do histórico para mostrar novo upload
-                    from django.core.cache import cache
-                    # Limpa todo o cache em uma chamada (compatível com qualquer backend)
+        resultado = _processar_upload_imagem(request)
+        if resultado.get('success'):
                     cache.clear()
-                    
-                    messages.success(
-                        request, 
-                        f'✅ Imagem enviada com sucesso! Acompanhe o progresso no histórico.'
-                    )
-                    # Redirecionar para o histórico
                     return redirect('historico')
-                else:
-                    erro_msg = f'API não retornou job_id. Resposta: {resultado}'
-                    logger.error(erro_msg)
-                    imagem_obj.marcar_erro_processamento(erro_msg)
-                    messages.error(request, 'Erro ao enviar imagem para análise. API não retornou job_id válido.')
-                    
-            except Exception as e:
-                logger.error(f"Erro no upload da imagem: {str(e)}")
-                messages.error(request, f'Erro interno: {str(e)}')
-        else:
-            messages.error(request, 'Nenhuma imagem foi selecionada.')
     
     # Se GET ou se houve erro, mostrar página de upload
     return render(request, 'embarcacoes/upload_imagem.html')
+
+
+def upload_teste_grande(request):
+    """Página dedicada para testar uploads pesados com resumo de jobs recentes."""
+    contexto = {}
+    if request.method == 'POST':
+        resultado = _processar_upload_imagem(request)
+        contexto.update(resultado)
+        if resultado.get('success'):
+            cache.clear()
+    imagens = ImagemEmbarcacao.objects.select_related('embarcacao').order_by('-data_upload')[:15]
+    contexto['historico_imagens'] = imagens
+    return render(request, 'embarcacoes/upload_teste_grande.html', contexto)
 
 
 def verificar_status_job(request, job_id):
@@ -230,6 +286,9 @@ def verificar_status_job(request, job_id):
                 resultado = api_client.obter_resultado_processamento(status_data['resource_id'])
                 if resultado:
                     imagem.finalizar_processamento(resultado, status_data['resource_id'])
+                    cache.clear()
+            elif imagem.status_analise == StatusAnalise.ERRO:
+                cache.clear()
         else:
             # API não retornou dados (erro 500 ou timeout)
             if imagem.tentativas_consulta >= MAX_TENTATIVAS:
@@ -238,6 +297,7 @@ def verificar_status_job(request, job_id):
                 imagem.status_analise = StatusAnalise.ERRO
                 imagem.erro_processamento = f"A API não respondeu após {MAX_TENTATIVAS} tentativas. Job pode ter expirado ou falhado."
                 imagem.save()
+                cache.clear()
         
         return JsonResponse({
             'job_id': job_id,
@@ -415,31 +475,49 @@ def historico(request):
         
         # Buscar também uploads locais que ainda não estão na API
         uploads_locais = []
+        locais_por_resource = {}
         try:
             imagens_locais = ImagemEmbarcacao.objects.select_related('embarcacao').filter(
-                status_analise__in=[StatusAnalise.PENDENTE, StatusAnalise.PROCESSANDO]
+                status_analise__in=[
+                    StatusAnalise.PENDENTE,
+                    StatusAnalise.PROCESSANDO,
+                    StatusAnalise.ANALISADA,
+                    StatusAnalise.ERRO,
+                ]
             ).order_by('-data_upload')
             
             for img in imagens_locais:
-                uploads_locais.append({
-                    'id': f'local_{img.id}',
-                    'localidade': img.titulo or 'Upload Local',
-                    'classificacao': 'processando',
-                    'regiao': img.embarcacao.regiao,
-                    'data_cadastro': img.data_upload.isoformat(),
-                    'data_foto': None,
-                    'latitude': float(img.embarcacao.latitude) if img.embarcacao.latitude else None,
-                    'longitude': float(img.embarcacao.longitude) if img.embarcacao.longitude else None,
-                    'imagem_url': img.imagem.url if img.imagem else None,
-                    'job_id': img.job_id,
-                    'progresso': img.progresso,
-                    'status_local': img.get_status_analise_display(),
-                })
+                dados_local = _formatar_upload_local(img, request)
+                resource_id = dados_local.get('resource_id')
+                if resource_id:
+                    locais_por_resource[resource_id] = dados_local
+                if img.status_analise in [StatusAnalise.ANALISADA, StatusAnalise.APROVADA] and resource_id:
+                    # Resultado final já disponível via API - evitar duplicidade
+                    continue
+                uploads_locais.append(dados_local)
         except Exception as e:
             logger.error(f"Erro ao buscar uploads locais: {e}")
         
         # Mesclar dados da API com uploads locais
-        embarcacoes = uploads_locais + embarcacoes_api
+        embarcacoes_api_enriquecidas = []
+        for embarcacao in embarcacoes_api:
+            api_item = dict(embarcacao)
+            api_item['origem'] = 'api'
+            resource_key = str(api_item.get('id') or api_item.get('resource_id') or '')
+            local_info = locais_por_resource.get(resource_key)
+            if local_info:
+                api_item['progresso'] = local_info.get('progresso', 100)
+                api_item['mensagem_status'] = local_info.get('mensagem_status', '')
+                api_item['status_local'] = local_info.get('status_local', '')
+                api_item['job_id'] = local_info.get('job_id')
+                api_item['resultado_api'] = local_info.get('resultado_api') or api_item.get('resultado_api')
+            else:
+                api_item.setdefault('progresso', 100 if api_item.get('classificacao') else 0)
+                api_item.setdefault('mensagem_status', '')
+                api_item.setdefault('status_local', 'Analisada' if api_item.get('classificacao') else '')
+            embarcacoes_api_enriquecidas.append(api_item)
+
+        embarcacoes = uploads_locais + embarcacoes_api_enriquecidas
         
         # Ordenar por data de cadastro (mais recentes primeiro)
         embarcacoes = sorted(embarcacoes, key=lambda x: x.get('data_cadastro', ''), reverse=True)
@@ -510,31 +588,48 @@ def historico_ajax(request):
     
     # Buscar também uploads locais que ainda não estão na API
     uploads_locais = []
+    locais_por_resource = {}
     try:
         imagens_locais = ImagemEmbarcacao.objects.select_related('embarcacao').filter(
-            status_analise__in=[StatusAnalise.PENDENTE, StatusAnalise.PROCESSANDO]
+            status_analise__in=[
+                StatusAnalise.PENDENTE,
+                StatusAnalise.PROCESSANDO,
+                StatusAnalise.ANALISADA,
+                StatusAnalise.ERRO,
+            ]
         ).order_by('-data_upload')
         
         for img in imagens_locais:
-            uploads_locais.append({
-                'id': f'local_{img.id}',
-                'localidade': img.titulo or 'Upload Local',
-                'classificacao': 'processando',
-                'regiao': img.embarcacao.regiao,
-                'data_cadastro': img.data_upload.isoformat(),
-                'data_foto': None,
-                'latitude': float(img.embarcacao.latitude) if img.embarcacao.latitude else None,
-                'longitude': float(img.embarcacao.longitude) if img.embarcacao.longitude else None,
-                'imagem_url': img.imagem.url if img.imagem else None,
-                'job_id': img.job_id,
-                'progresso': img.progresso,
-                'status_local': img.get_status_analise_display(),
-            })
+            dados_local = _formatar_upload_local(img, request)
+            resource_id = dados_local.get('resource_id')
+            if resource_id:
+                locais_por_resource[resource_id] = dados_local
+            if img.status_analise in [StatusAnalise.ANALISADA, StatusAnalise.APROVADA] and resource_id:
+                continue
+            uploads_locais.append(dados_local)
     except Exception as e:
         logger.error(f"Erro ao buscar uploads locais: {e}")
     
     # Mesclar dados da API com uploads locais
-    embarcacoes = uploads_locais + embarcacoes_api
+    embarcacoes_api_enriquecidas = []
+    for embarcacao in embarcacoes_api:
+        api_item = dict(embarcacao)
+        api_item['origem'] = 'api'
+        resource_key = str(api_item.get('id') or api_item.get('resource_id') or '')
+        local_info = locais_por_resource.get(resource_key)
+        if local_info:
+            api_item['progresso'] = local_info.get('progresso', 100)
+            api_item['mensagem_status'] = local_info.get('mensagem_status', '')
+            api_item['status_local'] = local_info.get('status_local', '')
+            api_item['job_id'] = local_info.get('job_id')
+            api_item['resultado_api'] = local_info.get('resultado_api') or api_item.get('resultado_api')
+        else:
+            api_item.setdefault('progresso', 100 if api_item.get('classificacao') else 0)
+            api_item.setdefault('mensagem_status', '')
+            api_item.setdefault('status_local', 'Analisada' if api_item.get('classificacao') else '')
+        embarcacoes_api_enriquecidas.append(api_item)
+
+    embarcacoes = uploads_locais + embarcacoes_api_enriquecidas
     
     # Ordenar por data de cadastro (mais recentes primeiro)
     embarcacoes = sorted(embarcacoes, key=lambda x: x.get('data_cadastro', ''), reverse=True)
