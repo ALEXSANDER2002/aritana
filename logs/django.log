@@ -18225,3 +18225,10 @@ INFO 2025-11-13 14:34:41,719 api_client 5380 11880 Retornando estatísticas do ca
 INFO 2025-11-13 14:34:43,181 api_client 5380 11880 Retornando dados do cache
 INFO 2025-11-13 14:34:43,204 views 5380 11880 Dados do histórico carregados da API em 0.02s
 INFO 2025-11-13 14:34:43,308 api_client 5380 11880 Retornando dados do cache
+INFO 2025-11-13 15:02:06,504 api_client 5184 13856 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-13 15:04:11,588 api_client 3012 10364 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-13 15:04:19,876 api_client 13516 13820 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-13 15:04:28,462 api_client 10228 17388 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-13 15:04:32,420 api_client 9008 14724 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-13 15:04:40,816 api_client 15660 620 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-13 15:04:52,280 api_client 14240 12040 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app

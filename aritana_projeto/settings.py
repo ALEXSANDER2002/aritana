@@ -26,7 +26,9 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-^x88_21f#((z^2l)piaa8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver', '0.0.0.0',"aritana-production.up.railway.app"]
+# ALLOWED_HOSTS - para produção, configure via variável de ambiente
+# Exemplo: ALLOWED_HOSTS=aritana-production.up.railway.app,seu-dominio.com
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost,testserver,0.0.0.0,aritana-production.up.railway.app').split(',')
 
 
 # Application definition
@@ -45,6 +47,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Deve vir logo após SecurityMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -124,11 +127,9 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-# Configuração para servir arquivos estáticos em desenvolvimento
-if DEBUG:
-    STATICFILES_DIRS = [
-        BASE_DIR / "static",
-    ]
+# Configuração do WhiteNoise para servir arquivos estáticos em produção
+# Usando CompressedStaticFilesStorage (mais simples e compatível)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -201,3 +202,19 @@ LOGGING = {
         'handlers': ['console'],
     },
 }
+
+# Configurações de Segurança para Produção
+if not DEBUG:
+    # Forçar HTTPS (comentado temporariamente para debug - descomente após verificar)
+    # SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000  # 1 ano
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # Configurações adicionais de segurança
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
