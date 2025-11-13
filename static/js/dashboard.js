@@ -80,6 +80,24 @@ function initializeMap() {
     // Limpar completamente o mapa anterior
     clearMap();
     
+    // Verificar se Leaflet está disponível
+    if (typeof L === 'undefined') {
+        console.error('Leaflet não está disponível!');
+        mapContainer.innerHTML = `
+            <div class="d-flex align-items-center justify-content-center" style="height: 400px;">
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5 class="text-muted">Erro ao carregar biblioteca do mapa</h5>
+                    <p class="text-muted small">Leaflet não foi carregado corretamente</p>
+                    <button class="btn btn-sm btn-outline-success" onclick="location.reload()">
+                        <i class="fas fa-redo me-1"></i> Recarregar Página
+                    </button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
     // Criar mapa com coordenadas padrão (será ajustado quando os dados chegarem)
     const map = L.map('map').setView([-1.4558, -48.5044], 10); // Belém, PA
     window.currentMap = map;
@@ -92,9 +110,11 @@ function initializeMap() {
     }).addTo(map);
     
     // Carregar dados das embarcações com timeout
-    const fetchPromise = fetch('/api/mapa/');
+    // Usar URL absoluta para funcionar em produção
+    const apiUrl = window.location.origin + '/api/mapa/';
+    const fetchPromise = fetch(apiUrl);
     const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 5000)
+        setTimeout(() => reject(new Error('Timeout')), 10000)
     );
     
     Promise.race([fetchPromise, timeoutPromise])

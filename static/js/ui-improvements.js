@@ -122,7 +122,8 @@ function improveErrorHandling() {
     window.addEventListener('error', function(e) {
         if (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK') {
             console.warn('Recurso falhou ao carregar:', e.target.src || e.target.href);
-            showRetryNotification();
+            // Notificação removida - não exibir mais a mensagem de retry
+            // showRetryNotification();
         }
     }, true);
 }
@@ -192,33 +193,11 @@ function improveAccessibility() {
     });
 }
 
-// Mostrar notificação de retry
-function showRetryNotification() {
-    if (document.querySelector('.retry-notification')) return;
-    
-    const notification = document.createElement('div');
-    notification.className = 'retry-notification alert alert-info alert-dismissible fade show position-fixed';
-    notification.style.bottom = '20px';
-    notification.style.left = '20px';
-    notification.style.zIndex = '9999';
-    notification.style.maxWidth = '300px';
-    notification.innerHTML = `
-        <i class="fas fa-wifi me-2"></i>
-        Alguns recursos podem não ter carregado. 
-        <button class="btn btn-sm btn-outline-info ms-2" onclick="location.reload()">
-            Recarregar
-        </button>
-        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 10000);
-}
+// Mostrar notificação de retry - FUNÇÃO REMOVIDA
+// A notificação "Alguns recursos podem não ter carregado" foi removida conforme solicitado
+// function showRetryNotification() {
+//     // Função removida
+// }
 
 // Função para smooth scroll
 function smoothScrollTo(target) {
@@ -291,5 +270,5 @@ document.head.appendChild(style);
 
 // Expor funções globalmente
 window.smoothScrollTo = smoothScrollTo;
-window.showRetryNotification = showRetryNotification;
+// window.showRetryNotification = showRetryNotification; // Removido
 window.initializeUIImprovements = initializeUIImprovements;

@@ -92,9 +92,11 @@ function initializeMap() {
         maxNativeZoom: 17
     }).addTo(map);
     
-    const fetchPromise = fetch('{% url "dados_mapa_json" %}');
+    // Usar URL absoluta para funcionar em produção
+    const apiUrl = window.location.origin + '{% url "dados_mapa_json" %}';
+    const fetchPromise = fetch(apiUrl);
     const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 5000)
+        setTimeout(() => reject(new Error('Timeout ao carregar dados do mapa')), 10000)
     );
     
     Promise.race([fetchPromise, timeoutPromise])
@@ -401,30 +403,45 @@ function showTabNotification(target) {
 
 function loadLeaflet() {
     if (window.L) {
+        console.log('Leaflet já está carregado');
         return Promise.resolve();
     }
     return new Promise((resolve, reject) => {
-        const existingScript = document.querySelector('script[data-leaflet]');
+        // Verificar se o CSS já foi carregado
+        const existingCSS = document.querySelector('link[href*="leaflet.css"]');
+        if (!existingCSS) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            link.integrity = 'sha256-sA+4J8AAJeWo7kPFAm27RjTvA1rNq6pM/2GmO6pH7k8=';
+            link.crossOrigin = 'anonymous';
+            document.head.appendChild(link);
+        }
+        
+        const existingScript = document.querySelector('script[data-leaflet], script[src*="leaflet.js"]');
         if (existingScript) {
-            existingScript.addEventListener('load', resolve);
+            existingScript.addEventListener('load', () => {
+                console.log('✅ Leaflet carregado via script existente');
+                setTimeout(resolve, 100);
+            });
             existingScript.addEventListener('error', reject);
             return;
         }
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        link.integrity = 'sha256-sA+4J8AAJeWo7kPFAm27RjTvA1rNq6pM/2GmO6pH7k8=';
-        link.crossOrigin = '';
-        document.head.appendChild(link);
         
         const script = document.createElement('script');
         script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
         script.integrity = 'sha256-VuZ8IVLceXvC0JdeQ8AG1rruW//4QoBsM+d2y26tnAA=';
-        script.crossOrigin = '';
+        script.crossOrigin = 'anonymous';
         script.defer = true;
         script.dataset.leaflet = 'true';
-        script.onload = resolve;
-        script.onerror = reject;
+        script.onload = function() {
+            console.log('✅ Leaflet JS carregado com sucesso');
+            setTimeout(resolve, 100);
+        };
+        script.onerror = function(error) {
+            console.error('❌ Erro ao carregar Leaflet:', error);
+            reject(error);
+        };
         document.head.appendChild(script);
     });
 }
