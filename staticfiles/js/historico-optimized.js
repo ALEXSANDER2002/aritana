@@ -357,14 +357,16 @@ function atualizarTabela(embarcacoes) {
             </td>
             <td class="text-center">
                 <div class="btn-group btn-group-sm" role="group">
-                    <button class="btn btn-sm" 
-                            onclick="verDetalhes('${embarcacao.id || ''}')"
+                    <button class="btn btn-sm btn-ver-detalhes" 
+                            data-embarcacao-id="${embarcacao.id || ''}"
                             title="Ver detalhes"
                             style="background: #1f2937; border: 1px solid #1f2937; color: #ffffff;">
                         <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn btn-sm" 
-                            onclick="verNoMapa('${embarcacao.latitude || ''}', '${embarcacao.longitude || ''}', '${embarcacao.localidade || 'N/A'}')"
+                    <button class="btn btn-sm btn-ver-mapa" 
+                            data-latitude="${embarcacao.latitude || ''}"
+                            data-longitude="${embarcacao.longitude || ''}"
+                            data-localidade="${(embarcacao.localidade || 'N/A').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}"
                             title="Ver no mapa"
                             style="background: #f3f4f6; border: 1px solid #d1d5db; color: #374151;">
                         <i class="fas fa-map-marker-alt"></i>
@@ -378,6 +380,27 @@ function atualizarTabela(embarcacoes) {
     
     tbody.innerHTML = '';
     tbody.appendChild(fragment);
+    
+    // Adicionar event listeners para os botões
+    tbody.querySelectorAll('.btn-ver-detalhes').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-embarcacao-id');
+            if (id && typeof window.verDetalhes === 'function') {
+                window.verDetalhes(id);
+            }
+        });
+    });
+    
+    tbody.querySelectorAll('.btn-ver-mapa').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const lat = this.getAttribute('data-latitude');
+            const lng = this.getAttribute('data-longitude');
+            const localidade = this.getAttribute('data-localidade');
+            if (lat && lng && typeof window.verNoMapa === 'function') {
+                window.verNoMapa(lat, lng, localidade);
+            }
+        });
+    });
 }
 
 function atualizarPaginacao(data) {
@@ -561,7 +584,9 @@ function verDetalhes(id) {
                         </div>
                         ${imagemUrl ? `
                             <div class="text-center d-grid gap-2">
-                                <button class="btn btn-primary" onclick="verImagem('${imagemUrlSafe}', '${tituloSafe}')">
+                                <button class="btn btn-primary btn-ver-imagem-modal" 
+                                        data-imagem-url="${imagemUrlSafe}" 
+                                        data-titulo="${tituloSafe}">
                                     <i class="fas fa-image me-1"></i>Ver Imagem
                                 </button>
                                 <a class="btn btn-outline-primary" href="${imagemUrl}" download>
@@ -597,31 +622,47 @@ function verDetalhes(id) {
         </div>
     `;
     
-    // Inicializar mini mapa (apenas se Leaflet estiver disponível)
-    setTimeout(() => {
+    // Função para inicializar o mini mapa
+    function inicializarMiniMapa() {
         const lat = parseFloat(latitude);
         const lng = parseFloat(longitude);
         
-        // Verificar se Leaflet está carregado
-        if (typeof L === 'undefined') {
-            console.warn('Leaflet não está carregado, mini-mapa não será exibido');
-            const miniMapContainer = document.getElementById('mini-map');
-            if (miniMapContainer) {
-                miniMapContainer.innerHTML = `
-                    <div class="d-flex align-items-center justify-content-center h-100">
-                        <div class="text-center text-muted">
-                            <i class="fas fa-map-marked-alt fa-3x mb-3"></i>
-                            <p>Mini-mapa indisponível</p>
-                            <small>Coordenadas: ${latitude}, ${longitude}</small>
-                        </div>
-                    </div>
-                `;
-            }
+        if (isNaN(lat) || isNaN(lng)) {
+            console.error('Coordenadas inválidas:', latitude, longitude);
             return;
         }
         
+        const miniMapContainer = document.getElementById('mini-map');
+        if (!miniMapContainer) {
+            console.error('Container mini-map não encontrado');
+            return;
+        }
+        
+        // Verificar se o container está visível
+        if (miniMapContainer.offsetParent === null) {
+            console.log('⏳ Container mini-map não está visível, aguardando...');
+            setTimeout(() => inicializarMiniMapa(), 200);
+            return;
+        }
+        
+        // Verificar se já existe um mapa no container e removê-lo
+        if (window.currentMiniMap) {
+            console.log('🗑️ Removendo mapa anterior...');
+            try {
+                window.currentMiniMap.remove();
+            } catch (error) {
+                console.warn('Erro ao remover mapa anterior:', error);
+            }
+            window.currentMiniMap = null;
+        }
+        
+        // Limpar o container
+        miniMapContainer.innerHTML = '';
+        
         try {
             const map = L.map('mini-map').setView([lat, lng], 15);
+            // Armazenar referência do mapa
+            window.currentMiniMap = map;
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
@@ -650,18 +691,67 @@ function verDetalhes(id) {
             `).openPopup();
         } catch (error) {
             console.error('Erro ao criar mini-mapa:', error);
-            const miniMapContainer = document.getElementById('mini-map');
             if (miniMapContainer) {
                 miniMapContainer.innerHTML = `
                     <div class="d-flex align-items-center justify-content-center h-100">
                         <div class="text-center text-muted">
                             <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
                             <p>Erro ao carregar mapa</p>
-                            <small>Coordenadas: ${latitude}, ${longitude}</small>
+                            <small>${error.message || 'Erro desconhecido'}</small>
                         </div>
                     </div>
                 `;
             }
+        }
+    }
+    
+    // Inicializar mini mapa (apenas se Leaflet estiver disponível)
+    setTimeout(() => {
+        // Verificar se Leaflet está carregado
+        if (typeof L === 'undefined') {
+            console.log('🔄 Leaflet não disponível, tentando carregar...');
+            const loadLeafletFn = window.loadLeaflet;
+            if (typeof loadLeafletFn === 'function') {
+                loadLeafletFn()
+                    .then(() => {
+                        console.log('✅ Leaflet carregado, inicializando mini mapa...');
+                        setTimeout(() => {
+                            inicializarMiniMapa();
+                        }, 200);
+                    })
+                    .catch(error => {
+                        console.error('❌ Erro ao carregar Leaflet:', error);
+                        const miniMapContainer = document.getElementById('mini-map');
+                        if (miniMapContainer) {
+                            miniMapContainer.innerHTML = `
+                                <div class="d-flex align-items-center justify-content-center h-100">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+                                        <p>Não foi possível carregar a biblioteca do mapa</p>
+                                        <small>Coordenadas: ${latitude}, ${longitude}</small>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+            } else {
+                console.warn('⚠️ Função loadLeaflet não disponível');
+                const miniMapContainer = document.getElementById('mini-map');
+                if (miniMapContainer) {
+                    miniMapContainer.innerHTML = `
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-map-marked-alt fa-3x mb-3"></i>
+                                <p>Mini-mapa indisponível</p>
+                                <small>Coordenadas: ${latitude}, ${longitude}</small>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        } else {
+            // Leaflet já está disponível, inicializar diretamente
+            inicializarMiniMapa();
         }
     }, 100);
     
@@ -682,6 +772,34 @@ function verDetalhes(id) {
     console.log('Abrindo modal de detalhes...');
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
+    
+    // Limpar mapa quando o modal for fechado
+    modalElement.addEventListener('hidden.bs.modal', function() {
+        if (window.currentMiniMap) {
+            console.log('🗑️ Limpando mini mapa ao fechar modal...');
+            try {
+                window.currentMiniMap.remove();
+            } catch (error) {
+                console.warn('Erro ao remover mini mapa:', error);
+            }
+            window.currentMiniMap = null;
+        }
+    });
+    
+    // Adicionar event listener para o botão "Ver Imagem" no modal após ele ser exibido
+    modalElement.addEventListener('shown.bs.modal', function() {
+        const btnVerImagem = modalElement.querySelector('.btn-ver-imagem-modal');
+        if (btnVerImagem) {
+            btnVerImagem.addEventListener('click', function() {
+                const imagemUrl = this.getAttribute('data-imagem-url');
+                const titulo = this.getAttribute('data-titulo');
+                if (imagemUrl && typeof window.verImagem === 'function') {
+                    window.verImagem(imagemUrl, titulo);
+                }
+            });
+        }
+    }, { once: true });
+    
     console.log('Modal aberto com sucesso');
 }
 
@@ -797,42 +915,153 @@ console.log('🔄 Sobrescrevendo funções do dashboard.js para o histórico');
 
 function verNoMapa(latitude, longitude, titulo) {
     const modalBody = document.getElementById('coordenadas-info');
-    modalBody.innerHTML = `
-        <strong>${titulo}</strong><br>
-        <small>Coordenadas: ${latitude}, ${longitude}</small>
-    `;
+    if (modalBody) {
+        modalBody.innerHTML = `
+            <strong>${titulo}</strong><br>
+            <small>Coordenadas: ${latitude}, ${longitude}</small>
+        `;
+    }
     
-    // Inicializar mapa no modal
-    setTimeout(() => {
+    // Função para inicializar o mapa
+    function inicializarMapa() {
         const lat = parseFloat(latitude);
         const lng = parseFloat(longitude);
         
-        const map = L.map('modal-map').setView([lat, lng], 16);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+        if (isNaN(lat) || isNaN(lng)) {
+            console.error('Coordenadas inválidas:', latitude, longitude);
+            return;
+        }
         
-        // Marcador personalizado
-        const marker = L.circleMarker([lat, lng], {
-            color: '#007bff',
-            fillColor: '#007bff',
-            fillOpacity: 0.8,
-            radius: 20,
-            weight: 4
-        }).addTo(map);
+        const mapContainer = document.getElementById('modal-map');
+        if (!mapContainer) {
+            console.error('Container modal-map não encontrado');
+            return;
+        }
         
-        marker.bindPopup(`
-            <div style="text-align: center;">
-                <h5 style="margin: 0 0 10px 0;">${titulo}</h5>
-                <div style="font-size: 14px; color: #666;">
-                    <strong>Coordenadas:</strong><br>
-                    ${latitude}, ${longitude}
+        // Verificar se já existe um mapa no container e removê-lo
+        if (window.currentModalMap) {
+            console.log('🗑️ Removendo mapa anterior do modal...');
+            try {
+                window.currentModalMap.remove();
+            } catch (error) {
+                console.warn('Erro ao remover mapa anterior:', error);
+            }
+            window.currentModalMap = null;
+        }
+        
+        // Limpar o container
+        mapContainer.innerHTML = '';
+        
+        try {
+            const map = L.map('modal-map').setView([lat, lng], 16);
+            // Armazenar referência do mapa
+            window.currentModalMap = map;
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Marcador personalizado
+            const marker = L.circleMarker([lat, lng], {
+                color: '#007bff',
+                fillColor: '#007bff',
+                fillOpacity: 0.8,
+                radius: 20,
+                weight: 4
+            }).addTo(map);
+            
+            marker.bindPopup(`
+                <div style="text-align: center;">
+                    <h5 style="margin: 0 0 10px 0;">${titulo}</h5>
+                    <div style="font-size: 14px; color: #666;">
+                        <strong>Coordenadas:</strong><br>
+                        ${latitude}, ${longitude}
+                    </div>
                 </div>
-            </div>
-        `).openPopup();
-    }, 100);
+            `).openPopup();
+        } catch (error) {
+            console.error('Erro ao criar mapa:', error);
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center" style="height: 500px;">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+                            <p>Erro ao carregar mapa</p>
+                            <small>${error.message || 'Erro desconhecido'}</small>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    }
     
-    new bootstrap.Modal(document.getElementById('modalMapa')).show();
+    // Verificar se Leaflet está disponível
+    if (typeof L === 'undefined') {
+        console.log('🔄 Leaflet não disponível, tentando carregar...');
+        const loadLeafletFn = window.loadLeaflet;
+        if (typeof loadLeafletFn === 'function') {
+            loadLeafletFn()
+                .then(() => {
+                    console.log('✅ Leaflet carregado, inicializando mapa...');
+                    setTimeout(() => {
+                        inicializarMapa();
+                    }, 200);
+                })
+                .catch(error => {
+                    console.error('❌ Erro ao carregar Leaflet:', error);
+                    const mapContainer = document.getElementById('modal-map');
+                    if (mapContainer) {
+                        mapContainer.innerHTML = `
+                            <div class="d-flex align-items-center justify-content-center" style="height: 500px;">
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+                                    <p>Não foi possível carregar a biblioteca do mapa</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+        } else {
+            console.error('❌ Função loadLeaflet não disponível');
+            const mapContainer = document.getElementById('modal-map');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center" style="height: 500px;">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+                            <p>Biblioteca do mapa não disponível</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    } else {
+        // Leaflet já está disponível, inicializar diretamente
+        setTimeout(() => {
+            inicializarMapa();
+        }, 100);
+    }
+    
+    // Mostrar modal
+    const modalElement = document.getElementById('modalMapa');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        
+        // Limpar mapa quando o modal for fechado
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            if (window.currentModalMap) {
+                console.log('🗑️ Limpando mapa do modal ao fechar...');
+                try {
+                    window.currentModalMap.remove();
+                } catch (error) {
+                    console.warn('Erro ao remover mapa do modal:', error);
+                }
+                window.currentModalMap = null;
+            }
+        });
+    } else {
+        console.error('Modal modalMapa não encontrado');
+    }
 }
 
 /**

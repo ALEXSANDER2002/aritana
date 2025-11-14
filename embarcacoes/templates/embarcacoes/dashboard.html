@@ -24,17 +24,80 @@ function loadHeavyComponents() {
     
     // Carregar mapa com delay
     setTimeout(() => {
-        loadLeaflet().then(() => {
-            initializeMap();
-        });
+        console.log('🔄 Iniciando carregamento do mapa...');
+        
+        // Garantir que o container do mapa tenha altura
+        const mapContainer = document.getElementById('map');
+        if (mapContainer) {
+            if (!mapContainer.style.height || mapContainer.offsetHeight === 0) {
+                mapContainer.style.height = '500px';
+                mapContainer.style.minHeight = '400px';
+                console.log('📏 Altura do container do mapa definida');
+            }
+        }
+        
+        // Verificar se loadLeaflet está disponível (do base.html)
+        const loadLeafletFn = window.loadLeaflet || loadLeaflet;
+        if (typeof loadLeafletFn === 'function') {
+            console.log('📚 Carregando biblioteca Leaflet...');
+            loadLeafletFn()
+                .then(() => {
+                    console.log('✅ Leaflet carregado, inicializando mapa...');
+                    // Aguardar um pouco para garantir que tudo está pronto
+                    setTimeout(() => {
+                        // Verificar se initializeMap está disponível (do dashboard.js)
+                        if (typeof window.initializeMap === 'function') {
+                            window.initializeMap();
+                        } else if (typeof initializeMap === 'function') {
+                            initializeMap();
+                        } else {
+                            console.error('❌ initializeMap não está disponível');
+                        }
+                    }, 100);
+                })
+                .catch(error => {
+                    console.error('❌ Erro ao carregar Leaflet:', error);
+                    // Tentar inicializar mesmo assim - pode funcionar se já estiver carregado
+                    if (typeof L !== 'undefined' && typeof window.initializeMap === 'function') {
+                        console.log('🔄 Tentando inicializar mapa mesmo com erro no carregamento...');
+                        setTimeout(() => window.initializeMap(), 200);
+                    }
+                });
+        } else {
+            console.warn('⚠️ loadLeaflet não está disponível, tentando inicializar mapa diretamente...');
+            // Tentar inicializar diretamente - pode funcionar se Leaflet já estiver carregado
+            if (typeof L !== 'undefined') {
+                if (typeof window.initializeMap === 'function') {
+                    setTimeout(() => window.initializeMap(), 200);
+                } else {
+                    console.error('❌ initializeMap não está disponível e Leaflet já está carregado');
+                }
+            } else {
+                console.error('❌ Leaflet não está disponível e loadLeaflet também não');
+            }
+        }
     }, 500);
     
     // Carregar gráficos com delay maior
     setTimeout(() => {
-        loadChartJS().then(() => {
+        const loadChartJSFn = window.loadChartJS || loadChartJS;
+        if (typeof loadChartJSFn === 'function') {
+            loadChartJSFn()
+                .then(() => {
+                    if (typeof window.initializeCharts === 'function') {
+                        window.initializeCharts();
+                    } else if (typeof initializeCharts === 'function') {
             initializeCharts();
+                    }
+                    hideLoadingIndicator();
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar Chart.js:', error);
+                    hideLoadingIndicator();
+                });
+        } else {
             hideLoadingIndicator();
-        });
+        }
     }, 1000);
 }
 
@@ -403,45 +466,93 @@ function showTabNotification(target) {
 
 function loadLeaflet() {
     if (window.L) {
-        console.log('Leaflet já está carregado');
+        console.log('✅ Leaflet já está carregado');
         return Promise.resolve();
     }
     return new Promise((resolve, reject) => {
+        console.log('🔄 Carregando Leaflet...');
+        
         // Verificar se o CSS já foi carregado
         const existingCSS = document.querySelector('link[href*="leaflet.css"]');
         if (!existingCSS) {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-            link.integrity = 'sha256-sA+4J8AAJeWo7kPFAm27RjTvA1rNq6pM/2GmO6pH7k8=';
             link.crossOrigin = 'anonymous';
+            link.onerror = function() {
+                console.warn('⚠️ Erro ao carregar CSS, tentando fallback...');
+                const fallbackLink = document.createElement('link');
+                fallbackLink.rel = 'stylesheet';
+                fallbackLink.href = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
+                fallbackLink.crossOrigin = 'anonymous';
+                document.head.appendChild(fallbackLink);
+            };
             document.head.appendChild(link);
         }
         
         const existingScript = document.querySelector('script[data-leaflet], script[src*="leaflet.js"]');
         if (existingScript) {
+            if (typeof L !== 'undefined') {
+                resolve();
+                return;
+            }
             existingScript.addEventListener('load', () => {
                 console.log('✅ Leaflet carregado via script existente');
-                setTimeout(resolve, 100);
+                setTimeout(resolve, 200);
             });
-            existingScript.addEventListener('error', reject);
+            existingScript.addEventListener('error', (error) => {
+                console.error('❌ Erro no script existente:', error);
+                reject(error);
+            });
             return;
         }
         
         const script = document.createElement('script');
         script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.integrity = 'sha256-VuZ8IVLceXvC0JdeQ8AG1rruW//4QoBsM+d2y26tnAA=';
         script.crossOrigin = 'anonymous';
-        script.defer = true;
+        script.async = true;
         script.dataset.leaflet = 'true';
+        
+        const timeout = setTimeout(() => {
+            if (typeof L === 'undefined') {
+                console.error('❌ Timeout ao carregar Leaflet');
+                reject(new Error('Timeout ao carregar Leaflet'));
+            }
+        }, 10000);
+        
         script.onload = function() {
+            clearTimeout(timeout);
             console.log('✅ Leaflet JS carregado com sucesso');
-            setTimeout(resolve, 100);
+            if (typeof L !== 'undefined') {
+                setTimeout(resolve, 200);
+            } else {
+                console.error('❌ Leaflet carregado mas L não está disponível');
+                reject(new Error('Leaflet carregado mas L não está disponível'));
+            }
         };
+        
         script.onerror = function(error) {
-            console.error('❌ Erro ao carregar Leaflet:', error);
-            reject(error);
+            clearTimeout(timeout);
+            console.error('❌ Erro ao carregar Leaflet, tentando fallback...', error);
+            // Tentar fallback
+            const fallbackScript = document.createElement('script');
+            fallbackScript.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
+            fallbackScript.crossOrigin = 'anonymous';
+            fallbackScript.async = true;
+            fallbackScript.onload = function() {
+                if (typeof L !== 'undefined') {
+                    console.log('✅ Leaflet carregado via fallback');
+                    setTimeout(resolve, 200);
+                } else {
+                    reject(new Error('Fallback também falhou'));
+                }
+            };
+            fallbackScript.onerror = function() {
+                reject(new Error('Todos os CDNs falharam'));
+            };
+            document.head.appendChild(fallbackScript);
         };
+        
         document.head.appendChild(script);
     });
 }

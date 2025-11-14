@@ -18232,3 +18232,164 @@ INFO 2025-11-13 15:04:28,462 api_client 10228 17388 Cliente API inicializado - U
 INFO 2025-11-13 15:04:32,420 api_client 9008 14724 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
 INFO 2025-11-13 15:04:40,816 api_client 15660 620 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
 INFO 2025-11-13 15:04:52,280 api_client 14240 12040 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-14 18:42:05,961 api_client 16544 16608 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-14 18:43:16,593 api_client 5916 13592 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-14 18:44:11,943 api_client 3084 3124 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-14 18:44:21,250 api_client 15564 10888 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-14 18:45:46,385 api_client 9000 11540 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-14 18:46:07,350 api_client 16460 5104 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-14 18:46:09,513 api_client 16460 9916 Buscando dados de embarcações: /embarcacoes
+INFO 2025-11-14 18:46:10,888 api_client 16460 9916 Primeira página: 100 embarcações
+INFO 2025-11-14 18:46:12,092 api_client 16460 9916 Segunda página: 55 embarcações
+INFO 2025-11-14 18:46:12,093 api_client 16460 9916 Total de embarcações carregadas: 155
+INFO 2025-11-14 18:46:12,094 api_client 16460 9916 Retornando dados do cache
+INFO 2025-11-14 18:46:12,096 api_client 16460 9916 Estatísticas calculadas: {'legalidade': {'legais': 69, 'ilegais': 86}, 'regional': {'meses': ['Norte', 'Sudeste', 'Sul', 'Nordeste', 'Centro-Oeste', None, 'Pedreira', 'Sacramenta', 'Marco', 'Nazaré', 'Terra Firme', 'Guamá', 'Icoaraci', 'Telégrafo', 'Umarizal', 'Centro', 'Comércio'], 'legais': [43, 6, 5, 3, 7, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0], 'ilegais': [36, 4, 19, 6, 6, 8, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1]}}
+INFO 2025-11-14 18:46:14,310 api_client 16460 10908 Retornando estatísticas do cache
+INFO 2025-11-14 18:46:22,229 api_client 16460 10908 Retornando dados do cache
+INFO 2025-11-14 18:46:22,229 api_client 16460 10908 Retornando estatísticas do cache
+INFO 2025-11-14 18:46:23,296 api_client 16460 9916 Retornando estatísticas do cache
+INFO 2025-11-14 18:46:26,221 api_client 16460 9916 Retornando dados do cache
+INFO 2025-11-14 18:46:26,240 views 16460 9916 Dados do histórico carregados da API em 0.02s
+INFO 2025-11-14 18:46:26,370 api_client 16460 13464 Retornando dados do cache
+INFO 2025-11-14 18:46:29,951 api_client 16460 13464 Retornando dados do cache
+INFO 2025-11-14 18:46:29,951 api_client 16460 13464 Retornando estatísticas do cache
+INFO 2025-11-14 18:46:30,995 api_client 16460 15212 Retornando estatísticas do cache
+INFO 2025-11-14 18:46:59,383 api_client 10192 3460 Cliente API inicializado - URL: https://backend-segura-production.up.railway.app
+INFO 2025-11-14 18:49:04,965 api_client 16460 3680 Retornando dados do cache
+INFO 2025-11-14 18:49:04,965 api_client 16460 3680 Retornando estatísticas do cache
+INFO 2025-11-14 18:49:06,240 api_client 16460 16360 Retornando estatísticas do cache
+INFO 2025-11-14 18:49:16,480 api_client 16460 16360 Retornando dados do cache
+INFO 2025-11-14 18:49:16,481 api_client 16460 16360 Retornando estatísticas do cache
+INFO 2025-11-14 18:49:17,797 api_client 16460 11480 Retornando estatísticas do cache
+INFO 2025-11-14 18:51:35,902 api_client 16460 7652 Retornando dados do cache
+INFO 2025-11-14 18:51:35,903 api_client 16460 7652 Retornando dados do cache
+INFO 2025-11-14 18:51:35,904 api_client 16460 7652 Estatísticas calculadas: {'legalidade': {'legais': 69, 'ilegais': 86}, 'regional': {'meses': ['Norte', 'Sudeste', 'Sul', 'Nordeste', 'Centro-Oeste', None, 'Pedreira', 'Sacramenta', 'Marco', 'Nazaré', 'Terra Firme', 'Guamá', 'Icoaraci', 'Telégrafo', 'Umarizal', 'Centro', 'Comércio'], 'legais': [43, 6, 5, 3, 7, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0], 'ilegais': [36, 4, 19, 6, 6, 8, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1]}}
+INFO 2025-11-14 18:51:37,007 api_client 16460 13056 Retornando estatísticas do cache
+INFO 2025-11-14 18:52:46,126 api_client 16460 6336 Retornando dados do cache
+INFO 2025-11-14 18:52:46,127 api_client 16460 6336 Retornando estatísticas do cache
+INFO 2025-11-14 18:52:47,128 api_client 16460 16992 Retornando dados do cache
+INFO 2025-11-14 18:52:47,313 api_client 16460 16992 Retornando estatísticas do cache
+INFO 2025-11-14 18:53:18,955 views 16460 16992 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 18:53:19,060 api_client 16460 10796 Retornando dados do cache
+INFO 2025-11-14 18:57:17,494 api_client 16460 10496 Buscando dados de embarcações: /embarcacoes
+INFO 2025-11-14 18:57:18,802 api_client 16460 10496 Primeira página: 100 embarcações
+INFO 2025-11-14 18:57:19,741 api_client 16460 10496 Segunda página: 55 embarcações
+INFO 2025-11-14 18:57:19,742 api_client 16460 10496 Total de embarcações carregadas: 155
+INFO 2025-11-14 18:57:19,755 views 16460 10496 Dados do histórico carregados da API em 2.26s
+INFO 2025-11-14 18:57:19,914 views 16460 7960 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 18:57:52,393 views 16460 7960 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 18:57:52,468 views 16460 8280 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 18:58:05,442 views 16460 8280 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 18:58:05,519 views 16460 11432 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 18:58:22,408 api_client 16460 11432 Retornando dados do cache
+INFO 2025-11-14 18:58:22,409 api_client 16460 11432 Retornando dados do cache
+INFO 2025-11-14 18:58:22,409 api_client 16460 11432 Estatísticas calculadas: {'legalidade': {'legais': 69, 'ilegais': 86}, 'regional': {'meses': ['Norte', 'Sudeste', 'Sul', 'Nordeste', 'Centro-Oeste', None, 'Pedreira', 'Sacramenta', 'Marco', 'Nazaré', 'Terra Firme', 'Guamá', 'Icoaraci', 'Telégrafo', 'Umarizal', 'Centro', 'Comércio'], 'legais': [43, 6, 5, 3, 7, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0], 'ilegais': [36, 4, 19, 6, 6, 8, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1]}}
+INFO 2025-11-14 18:58:23,327 api_client 16460 8868 Retornando dados do cache
+INFO 2025-11-14 18:58:23,499 api_client 16460 8868 Retornando estatísticas do cache
+INFO 2025-11-14 19:03:00,619 api_client 16460 15780 Retornando dados do cache
+INFO 2025-11-14 19:03:00,619 api_client 16460 15780 Retornando estatísticas do cache
+INFO 2025-11-14 19:03:01,549 api_client 16460 15780 Retornando dados do cache
+INFO 2025-11-14 19:03:01,725 api_client 16460 15780 Retornando estatísticas do cache
+INFO 2025-11-14 19:03:15,419 views 16460 17404 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 19:03:15,524 api_client 16460 17404 Retornando dados do cache
+INFO 2025-11-14 19:03:53,000 views 16460 13664 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 19:03:53,073 views 16460 13664 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:05:06,961 views 16460 6116 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 19:05:07,099 views 16460 6116 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:05:27,476 views 16460 6116 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 19:05:27,539 views 16460 6116 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:07:25,678 api_client 16460 7956 Buscando dados de embarcações: /embarcacoes
+INFO 2025-11-14 19:07:27,282 api_client 16460 7956 Primeira página: 100 embarcações
+INFO 2025-11-14 19:07:28,441 api_client 16460 7956 Segunda página: 55 embarcações
+INFO 2025-11-14 19:07:28,444 api_client 16460 7956 Total de embarcações carregadas: 155
+INFO 2025-11-14 19:07:28,455 views 16460 7956 Dados do histórico carregados da API em 2.78s
+INFO 2025-11-14 19:07:28,537 views 16460 13772 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:09:38,189 views 16460 11444 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 19:09:38,336 api_client 16460 11444 Retornando dados do cache
+INFO 2025-11-14 19:15:02,290 views 16460 1400 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 19:15:02,459 api_client 16460 1400 Retornando dados do cache
+INFO 2025-11-14 19:16:24,386 views 16460 1400 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 19:16:24,463 views 16460 1400 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:16:46,551 api_client 16460 1400 Retornando dados do cache
+INFO 2025-11-14 19:16:46,552 api_client 16460 1400 Retornando dados do cache
+INFO 2025-11-14 19:16:46,553 api_client 16460 1400 Estatísticas calculadas: {'legalidade': {'legais': 69, 'ilegais': 86}, 'regional': {'meses': ['Norte', 'Sudeste', 'Sul', 'Nordeste', 'Centro-Oeste', None, 'Pedreira', 'Sacramenta', 'Marco', 'Nazaré', 'Terra Firme', 'Guamá', 'Icoaraci', 'Telégrafo', 'Umarizal', 'Centro', 'Comércio'], 'legais': [43, 6, 5, 3, 7, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0], 'ilegais': [36, 4, 19, 6, 6, 8, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1]}}
+INFO 2025-11-14 19:16:47,468 api_client 16460 1400 Retornando dados do cache
+INFO 2025-11-14 19:16:47,646 api_client 16460 1400 Retornando estatísticas do cache
+INFO 2025-11-14 19:16:53,064 views 16460 1400 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 19:16:53,128 views 16460 1400 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:19:49,939 api_client 16460 14036 Buscando dados de embarcações: /embarcacoes
+INFO 2025-11-14 19:19:51,445 api_client 16460 14036 Primeira página: 100 embarcações
+INFO 2025-11-14 19:19:52,509 api_client 16460 14036 Segunda página: 55 embarcações
+INFO 2025-11-14 19:19:52,510 api_client 16460 14036 Total de embarcações carregadas: 155
+INFO 2025-11-14 19:19:52,511 api_client 16460 14036 Retornando estatísticas do cache
+INFO 2025-11-14 19:19:53,508 api_client 16460 14036 Retornando dados do cache
+INFO 2025-11-14 19:19:53,683 api_client 16460 14036 Retornando estatísticas do cache
+INFO 2025-11-14 19:19:57,575 api_client 16460 14036 Retornando dados do cache
+INFO 2025-11-14 19:19:57,589 views 16460 14036 Dados do histórico carregados da API em 0.01s
+INFO 2025-11-14 19:19:57,674 views 16460 14036 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:19:58,967 api_client 16460 14036 Retornando dados do cache
+INFO 2025-11-14 19:19:58,968 api_client 16460 14036 Retornando estatísticas do cache
+INFO 2025-11-14 19:19:59,825 api_client 16460 14036 Retornando dados do cache
+INFO 2025-11-14 19:20:00,007 api_client 16460 14036 Retornando estatísticas do cache
+INFO 2025-11-14 19:20:18,477 views 16460 14036 Enviando para API YOLO: regiao=Telégrafo, localidade=Telégrafo, lat=-1.4558, lng=-48.5044
+INFO 2025-11-14 19:20:18,478 api_client 16460 14036 Dados para API YOLO: {'regiao': 'Telégrafo', 'localidade': 'Telégrafo', 'latitude': '-1.4558', 'longitude': '-48.5044', 'data_foto': '2025-11-14T19:20:18', 'titulo': 'Telégrafo', 'descricao': 'Upload em 14/11/2025 19:20'}
+INFO 2025-11-14 19:20:21,382 api_client 16460 14036 Resposta da API: {'job_id': '7f1cf846-d1d1-4840-a451-a45d2ec4fbd1', 'status_url': 'http://backend-segura-production.up.railway.app/jobs/7f1cf846-d1d1-4840-a451-a45d2ec4fbd1', 'result_url': None}
+INFO 2025-11-14 19:20:21,382 api_client 16460 14036 Imagem enviada para processamento. Job ID: 7f1cf846-d1d1-4840-a451-a45d2ec4fbd1
+INFO 2025-11-14 19:20:21,385 views 16460 14036 Resultado do envio: {'job_id': '7f1cf846-d1d1-4840-a451-a45d2ec4fbd1', 'status_url': 'http://backend-segura-production.up.railway.app/jobs/7f1cf846-d1d1-4840-a451-a45d2ec4fbd1', 'result_url': None}
+INFO 2025-11-14 19:20:21,405 api_client 16460 14036 Buscando dados de embarcações: /embarcacoes
+INFO 2025-11-14 19:20:22,457 api_client 16460 14036 Primeira página: 100 embarcações
+INFO 2025-11-14 19:20:23,444 api_client 16460 14036 Segunda página: 55 embarcações
+INFO 2025-11-14 19:20:23,445 api_client 16460 14036 Total de embarcações carregadas: 155
+INFO 2025-11-14 19:20:23,456 views 16460 14036 Dados do histórico carregados da API em 2.05s
+INFO 2025-11-14 19:20:23,544 api_client 16460 14036 Retornando dados do cache
+INFO 2025-11-14 19:20:26,569 api_client 16460 14036 Usando status_url da API (corrigido para HTTPS): https://backend-segura-production.up.railway.app/jobs/7f1cf846-d1d1-4840-a451-a45d2ec4fbd1
+INFO 2025-11-14 19:20:28,578 api_client 16460 14036 Usando status_url da API (corrigido para HTTPS): https://backend-segura-production.up.railway.app/jobs/7f1cf846-d1d1-4840-a451-a45d2ec4fbd1
+INFO 2025-11-14 19:20:30,573 api_client 16460 14036 Usando status_url da API (corrigido para HTTPS): https://backend-segura-production.up.railway.app/jobs/7f1cf846-d1d1-4840-a451-a45d2ec4fbd1
+INFO 2025-11-14 19:20:32,280 api_client 16460 14036 Resultado do processamento (ID 156): [{'id': 156, 'regiao': 'Telégrafo', 'localidade': 'Telégrafo', 'latitude': -1.4558, 'longitude': -48.5044, 'data_foto': '2025-11-14T19:20:18', 'data_cadastro': '2025-11-14T22:20:30', 'classificacao': 'Ilegal', 'titulo': 'Telégrafo', 'descricao': 'Upload em 14/11/2025 19:20', 'imagem_url': 'http://backend-segura-production.up.railway.app/images/a574f5cb8a2540f7aee744310a53ec3f_DJI_0416.JPG'}]
+INFO 2025-11-14 19:21:03,367 api_client 16460 14036 Buscando dados de embarcações: /embarcacoes
+INFO 2025-11-14 19:21:04,726 api_client 16460 14036 Primeira página: 100 embarcações
+INFO 2025-11-14 19:21:05,712 api_client 16460 14036 Segunda página: 56 embarcações
+INFO 2025-11-14 19:21:05,713 api_client 16460 14036 Total de embarcações carregadas: 156
+INFO 2025-11-14 19:21:05,724 views 16460 14036 Dados do histórico carregados da API em 2.36s
+INFO 2025-11-14 19:21:05,859 api_client 16460 14036 Retornando dados do cache
+INFO 2025-11-14 19:25:59,835 api_client 16460 14036 Retornando dados do cache
+INFO 2025-11-14 19:25:59,836 api_client 16460 14036 Retornando dados do cache
+INFO 2025-11-14 19:25:59,838 api_client 16460 14036 Estatísticas calculadas: {'legalidade': {'legais': 69, 'ilegais': 87}, 'regional': {'meses': ['Norte', 'Sudeste', 'Sul', 'Nordeste', 'Centro-Oeste', None, 'Pedreira', 'Sacramenta', 'Marco', 'Nazaré', 'Terra Firme', 'Guamá', 'Icoaraci', 'Telégrafo', 'Umarizal', 'Centro', 'Comércio'], 'legais': [43, 6, 5, 3, 7, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0], 'ilegais': [36, 4, 19, 6, 6, 8, 0, 0, 0, 1, 1, 1, 1, 2, 0, 1, 1]}}
+INFO 2025-11-14 19:26:00,776 api_client 16460 6956 Retornando dados do cache
+INFO 2025-11-14 19:26:00,951 api_client 16460 6956 Retornando estatísticas do cache
+INFO 2025-11-14 19:26:09,046 views 16460 6956 Dados do histórico carregados do cache em 0.00s
+INFO 2025-11-14 19:26:09,183 api_client 16460 6956 Retornando dados do cache
+INFO 2025-11-14 19:26:14,198 views 16460 6956 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:26:40,184 views 16460 14036 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:27:10,180 views 16460 6956 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:27:40,187 views 16460 14036 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:28:10,174 views 16460 14036 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:28:40,172 views 16460 14036 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:28:57,158 api_client 16460 14036 Retornando dados do cache
+INFO 2025-11-14 19:28:57,158 api_client 16460 14036 Retornando estatísticas do cache
+INFO 2025-11-14 19:28:58,109 api_client 16460 14036 Retornando dados do cache
+INFO 2025-11-14 19:28:58,300 api_client 16460 14036 Retornando estatísticas do cache
+INFO 2025-11-14 19:29:12,644 views 16460 14036 Enviando para API YOLO: regiao=Campina, localidade=Campina, lat=-1.4558, lng=-48.5044
+INFO 2025-11-14 19:29:12,645 api_client 16460 14036 Dados para API YOLO: {'regiao': 'Campina', 'localidade': 'Campina', 'latitude': '-1.4558', 'longitude': '-48.5044', 'data_foto': '2025-11-14T19:29:12', 'titulo': 'Campina', 'descricao': 'Upload em 14/11/2025 19:29'}
+INFO 2025-11-14 19:29:16,712 api_client 16460 14036 Resposta da API: {'job_id': 'ce64f995-f024-4879-9643-e0b02267991b', 'status_url': 'http://backend-segura-production.up.railway.app/jobs/ce64f995-f024-4879-9643-e0b02267991b', 'result_url': None}
+INFO 2025-11-14 19:29:16,712 api_client 16460 14036 Imagem enviada para processamento. Job ID: ce64f995-f024-4879-9643-e0b02267991b
+INFO 2025-11-14 19:29:16,715 views 16460 14036 Resultado do envio: {'job_id': 'ce64f995-f024-4879-9643-e0b02267991b', 'status_url': 'http://backend-segura-production.up.railway.app/jobs/ce64f995-f024-4879-9643-e0b02267991b', 'result_url': None}
+INFO 2025-11-14 19:29:16,728 api_client 16460 14036 Buscando dados de embarcações: /embarcacoes
+INFO 2025-11-14 19:29:17,838 api_client 16460 14036 Primeira página: 100 embarcações
+INFO 2025-11-14 19:29:18,807 api_client 16460 14036 Segunda página: 56 embarcações
+INFO 2025-11-14 19:29:18,808 api_client 16460 14036 Total de embarcações carregadas: 156
+INFO 2025-11-14 19:29:18,819 views 16460 14036 Dados do histórico carregados da API em 2.09s
+INFO 2025-11-14 19:29:18,899 api_client 16460 14036 Retornando dados do cache
+INFO 2025-11-14 19:29:20,934 api_client 16460 14036 Usando status_url da API (corrigido para HTTPS): https://backend-segura-production.up.railway.app/jobs/ce64f995-f024-4879-9643-e0b02267991b
+INFO 2025-11-14 19:29:21,786 views 16460 14036 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:29:22,939 api_client 16460 14036 Usando status_url da API (corrigido para HTTPS): https://backend-segura-production.up.railway.app/jobs/ce64f995-f024-4879-9643-e0b02267991b
+INFO 2025-11-14 19:29:23,795 views 16460 14036 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:29:23,915 views 16460 14036 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:29:24,934 api_client 16460 14036 Usando status_url da API (corrigido para HTTPS): https://backend-segura-production.up.railway.app/jobs/ce64f995-f024-4879-9643-e0b02267991b
+INFO 2025-11-14 19:29:25,825 views 16460 14036 Dados AJAX carregados do cache em 0.00s
+INFO 2025-11-14 19:29:26,926 api_client 16460 14036 Usando status_url da API (corrigido para HTTPS): https://backend-segura-production.up.railway.app/jobs/ce64f995-f024-4879-9643-e0b02267991b
+INFO 2025-11-14 19:29:28,619 api_client 16460 14036 Resultado do processamento (ID 157): [{'id': 157, 'regiao': 'Campina', 'localidade': 'Campina', 'latitude': -1.4558, 'longitude': -48.5044, 'data_foto': '2025-11-14T19:29:12', 'data_cadastro': '2025-11-14T22:29:26', 'classificacao': 'Ilegal', 'titulo': 'Campina', 'descricao': 'Upload em 14/11/2025 19:29', 'imagem_url': 'http://backend-segura-production.up.railway.app/images/932ba00b4379459d9544fbc7a2dea6dc_DJI_0416.JPG'}]
+INFO 2025-11-14 19:29:28,635 api_client 16460 14036 Buscando dados de embarcações: /embarcacoes
+INFO 2025-11-14 19:29:29,605 api_client 16460 14036 Primeira página: 100 embarcações
+INFO 2025-11-14 19:29:30,565 api_client 16460 14036 Segunda página: 57 embarcações
+INFO 2025-11-14 19:29:30,566 api_client 16460 14036 Total de embarcações carregadas: 157

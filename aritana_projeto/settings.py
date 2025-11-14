@@ -24,6 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-^x88_21f#((z^2l)piaa8c$^3c%wcw5j8i17d=3qay8hn8^8-m')
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# Modo desenvolvimento ativado para testes
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 # ALLOWED_HOSTS - para produção, configure via variável de ambiente
@@ -218,3 +219,9 @@ if not DEBUG:
     
     # Configurações adicionais de segurança
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # Nota: Se você usar CSP (Content Security Policy) via middleware,
+    # certifique-se de permitir os seguintes domínios para o mapa funcionar:
+    # - https://unpkg.com (Leaflet)
+    # - https://cdn.jsdelivr.net (fallback Leaflet)
+    # - https://*.tile.openstreetmap.org (tiles do mapa)

@@ -14,7 +14,6 @@
     <link href="{% static 'css/font-awesome-fix.css' %}" rel="stylesheet" media="all">
     <!-- Leaflet CSS - carregado diretamente para garantir funcionamento em produção -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-          integrity="sha256-sA+4J8AAJeWo7kPFAm27RjTvA1rNq6pM/2GmO6pH7k8=" 
           crossorigin="anonymous">
     
     <!-- Google Fonts -->
@@ -1140,6 +1139,22 @@
             footer .col-md-6:last-child {
                 margin-top: 1rem;
             }
+            
+            /* Logos das universidades mobile */
+            .university-logo {
+                height: 80px !important;
+            }
+        }
+        
+        /* Logos das universidades */
+        .university-logo {
+            transition: transform 0.3s ease, filter 0.3s ease;
+            filter: grayscale(0%);
+        }
+        
+        .university-logo:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
         }
 
             /* Tabs mobile */
@@ -1890,9 +1905,19 @@
         }
 
         .map-container {
-            height: 500px;
+            height: 500px !important;
+            min-height: 400px !important;
             border-radius: 10px;
             overflow: hidden;
+            position: relative;
+            background-color: #f0f0f0;
+        }
+        
+        /* Garantir que o mapa tenha altura mesmo se CSS não carregar */
+        #map {
+            height: 500px !important;
+            min-height: 400px !important;
+            width: 100%;
         }
 
         .stat-card {
@@ -2029,7 +2054,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <!-- Logo e Descrição -->
-                <div class="col-lg-8 mb-3 mb-lg-0">
+                <div class="col-12 mb-3 mb-lg-0">
                     <div class="d-flex align-items-center mb-3">
                         <img src="{% static 'logo.png' %}" alt="ARITANA Logo" class="me-3" style="height: 45px; width: auto;">
                         <h5 class="text-dark mb-0 fw-bold">ARITANA</h5>
@@ -2045,23 +2070,6 @@
                     </div>
                 </div>
 
-                <!-- Informações de Contato -->
-                <div class="col-lg-4 text-lg-end">
-                    <div class="mb-3">
-                        <div class="d-flex align-items-center justify-content-lg-end mb-2">
-                            <i class="fas fa-map-marker-alt text-success me-2"></i>
-                            <span class="text-muted">Belém - Pará, Brasil</span>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-lg-end mb-2">
-                            <i class="fas fa-water text-info me-2"></i>
-                            <span class="text-muted">Baía do Guajará</span>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-lg-end">
-                            <i class="fas fa-shield-alt text-warning me-2"></i>
-                            <span class="text-muted">Amazônia Legal</span>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Linha de Copyright -->
@@ -2073,14 +2081,18 @@
                     </p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <div class="d-flex justify-content-md-end align-items-center gap-3">
+                    <div class="d-flex justify-content-md-end align-items-center gap-4 flex-wrap">
                         <div class="text-center">
-                            <div class="text-dark fw-bold small">UFAL</div>
-                            <small class="text-muted">UNIVERSIDADE FEDERAL DE ALAGOAS</small>
+                            <img src="{% static 'universidade-alagoas.png' %}" 
+                                 alt="Universidade Federal de Alagoas" 
+                                 class="university-logo"
+                                 style="height: 100px; width: auto; object-fit: contain;">
                         </div>
                         <div class="text-center">
-                            <div class="text-dark fw-bold small">UFPE</div>
-                            <small class="text-muted">UNIVERSIDADE FEDERAL DE PERNAMBUCO</small>
+                            <img src="{% static 'brasao-ufpe.png' %}" 
+                                 alt="Brasão Institucional - UFPE"
+                                 class="university-logo"
+                                 style="height: 100px; width: auto; object-fit: contain;">
                         </div>
                     </div>
                 </div>
@@ -2103,47 +2115,108 @@
     
     <!-- Carregar bibliotecas pesadas apenas quando necessário -->
     <script>
-        // Carregar Leaflet apenas quando necessário
+        // Carregar Leaflet apenas quando necessário - versão melhorada com fallbacks
         function loadLeaflet() {
             return new Promise((resolve, reject) => {
                 if (typeof L !== 'undefined') {
-                    console.log('Leaflet já está carregado');
+                    console.log('✅ Leaflet já está carregado');
                     resolve();
                     return;
                 }
                 
+                console.log('🔄 Carregando Leaflet...');
+                
                 // Verificar se o CSS já foi carregado
-                const existingCSS = document.querySelector('link[href*="leaflet.css"]');
+                let existingCSS = document.querySelector('link[href*="leaflet.css"]');
                 if (!existingCSS) {
                     const link = document.createElement('link');
                     link.rel = 'stylesheet';
                     link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-                    link.integrity = 'sha256-sA+4J8AAJeWo7kPFAm27RjTvA1rNq6pM/2GmO6pH7k8=';
                     link.crossOrigin = 'anonymous';
+                    link.onerror = function() {
+                        console.warn('⚠️ Erro ao carregar CSS do Leaflet, tentando fallback...');
+                        // Tentar fallback
+                        const fallbackLink = document.createElement('link');
+                        fallbackLink.rel = 'stylesheet';
+                        fallbackLink.href = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
+                        fallbackLink.crossOrigin = 'anonymous';
+                        document.head.appendChild(fallbackLink);
+                    };
                     document.head.appendChild(link);
+                    existingCSS = link;
                 }
                 
                 // Verificar se o script já existe
                 const existingScript = document.querySelector('script[src*="leaflet.js"]');
                 if (existingScript) {
-                    existingScript.addEventListener('load', resolve);
-                    existingScript.addEventListener('error', reject);
+                    console.log('📜 Script Leaflet já existe, aguardando carregamento...');
+                    if (typeof L !== 'undefined') {
+                        resolve();
+                        return;
+                    }
+                    existingScript.addEventListener('load', () => {
+                        console.log('✅ Leaflet carregado via script existente');
+                        setTimeout(resolve, 200);
+                    });
+                    existingScript.addEventListener('error', (error) => {
+                        console.error('❌ Erro no script Leaflet existente:', error);
+                        reject(error);
+                    });
                     return;
                 }
                 
+                // Criar novo script
                 const script = document.createElement('script');
                 script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-                script.integrity = 'sha256-VuZ8IVLceXvC0JdeQ8AG1rruW//4QoBsM+d2y26tnAA=';
                 script.crossOrigin = 'anonymous';
+                script.async = true;
+                
+                // Timeout para evitar espera infinita
+                const timeout = setTimeout(() => {
+                    if (typeof L === 'undefined') {
+                        console.error('❌ Timeout ao carregar Leaflet');
+                        reject(new Error('Timeout ao carregar Leaflet'));
+                    }
+                }, 10000);
+                
                 script.onload = function() {
+                    clearTimeout(timeout);
                     console.log('✅ Leaflet JS carregado com sucesso');
+                    // Verificar se L está disponível
+                    if (typeof L !== 'undefined') {
                     // Aguardar um pouco para garantir que o CSS também foi processado
-                    setTimeout(resolve, 100);
+                        setTimeout(resolve, 200);
+                    } else {
+                        console.error('❌ Leaflet carregado mas objeto L não está disponível');
+                        reject(new Error('Leaflet carregado mas objeto L não está disponível'));
+                    }
                 };
+                
                 script.onerror = function(error) {
+                    clearTimeout(timeout);
                     console.error('❌ Erro ao carregar Leaflet:', error);
-                    reject(error);
+                    // Tentar fallback
+                    console.log('🔄 Tentando fallback para CDN alternativo...');
+                    const fallbackScript = document.createElement('script');
+                    fallbackScript.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
+                    fallbackScript.crossOrigin = 'anonymous';
+                    fallbackScript.async = true;
+                    fallbackScript.onload = function() {
+                        if (typeof L !== 'undefined') {
+                            console.log('✅ Leaflet carregado via fallback');
+                            setTimeout(resolve, 200);
+                        } else {
+                            console.error('❌ Fallback carregou mas L não está disponível');
+                            reject(new Error('Fallback também falhou'));
+                        }
+                    };
+                    fallbackScript.onerror = function(error) {
+                        console.error('❌ Erro no fallback:', error);
+                        reject(new Error('Todos os CDNs falharam'));
+                    };
+                    document.head.appendChild(fallbackScript);
                 };
+                
                 document.head.appendChild(script);
             });
         }
@@ -2270,6 +2343,39 @@
             });
         });
     </script>
+
+    <!-- Modal de Imagem -->
+    <div class="modal fade" id="modalImagem" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header" style="background: #ffffff; border-bottom: 1px solid #e5e7eb;">
+                    <h5 class="modal-title" style="color: #1f2937; font-weight: 600;">
+                        <i class="fas fa-image me-2" style="color: #6b7280;"></i>Imagem da Embarcação
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center" style="background: #f9fafb; padding: 2rem;">
+                    <img id="imagem-embarcacao" src="" alt="Imagem da Embarcação" 
+                         class="img-fluid rounded" 
+                         style="max-height: 70vh; width: auto; display: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border: 1px solid #e5e7eb;">
+                    <div class="mt-4 p-3" style="background: #ffffff; border-radius: 8px; border: 1px solid #e5e7eb;">
+                        <p class="mb-3" id="imagem-titulo" style="color: #374151;"></p>
+                        <a id="link-imagem-original" href="" target="_blank" 
+                           class="btn btn-sm" 
+                           style="background: #1f2937; border: none; color: #ffffff; padding: 0.5rem 1rem; border-radius: 6px;">
+                            <i class="fas fa-external-link-alt me-1"></i>Abrir em Nova Aba
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background: #ffffff; border-top: 1px solid #e5e7eb;">
+                    <button type="button" class="btn btn-sm" data-bs-dismiss="modal"
+                            style="background: #f3f4f6; border: 1px solid #d1d5db; color: #374151; padding: 0.5rem 1rem; border-radius: 6px;">
+                        <i class="fas fa-times me-1"></i>Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {% block extra_js %}{% endblock %}
 </body>

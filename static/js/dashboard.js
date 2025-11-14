@@ -62,29 +62,39 @@ function clearMap() {
 
 // Inicializar Mapa
 function initializeMap() {
+    console.log('🔍 Tentando inicializar mapa...');
     const mapContainer = document.getElementById('map');
     if (!mapContainer) {
-        console.warn('Container do mapa não encontrado');
+        console.error('❌ Container do mapa não encontrado!');
         return;
+    }
+    
+    console.log('✅ Container do mapa encontrado');
+    
+    // Garantir que o container tenha altura
+    if (!mapContainer.style.height && mapContainer.offsetHeight === 0) {
+        mapContainer.style.height = '500px';
+        mapContainer.style.minHeight = '400px';
+        console.log('📏 Altura do container definida para 500px');
     }
     
     // Verificar se o container está visível
     if (mapContainer.offsetParent === null) {
-        console.log('Container do mapa não está visível, aguardando...');
+        console.log('⏳ Container do mapa não está visível, aguardando...');
         setTimeout(() => initializeMap(), 500);
         return;
     }
     
-    console.log('Inicializando mapa...');
+    console.log('🧹 Limpando mapa anterior...');
     
     // Limpar completamente o mapa anterior
     clearMap();
     
     // Verificar se Leaflet está disponível
     if (typeof L === 'undefined') {
-        console.error('Leaflet não está disponível!');
+        console.error('❌ Leaflet não está disponível!');
         mapContainer.innerHTML = `
-            <div class="d-flex align-items-center justify-content-center" style="height: 400px;">
+            <div class="d-flex align-items-center justify-content-center" style="height: 500px;">
                 <div class="text-center">
                     <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
                     <h5 class="text-muted">Erro ao carregar biblioteca do mapa</h5>
@@ -98,29 +108,77 @@ function initializeMap() {
         return;
     }
     
+    console.log('✅ Leaflet está disponível, criando mapa...');
+    
     // Criar mapa com coordenadas padrão (será ajustado quando os dados chegarem)
-    const map = L.map('map').setView([-1.4558, -48.5044], 10); // Belém, PA
-    window.currentMap = map;
+    let map;
+    try {
+        map = L.map('map', {
+            preferCanvas: false,
+            zoomControl: true
+        }).setView([-1.4558, -48.5044], 10); // Belém, PA
+        
+        window.currentMap = map;
+        console.log('✅ Mapa Leaflet criado com sucesso');
+    } catch (error) {
+        console.error('❌ Erro ao criar mapa:', error);
+        mapContainer.innerHTML = `
+            <div class="d-flex align-items-center justify-content-center" style="height: 500px;">
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <h5 class="text-muted">Erro ao criar mapa</h5>
+                    <p class="text-muted small">${error.message}</p>
+                    <button class="btn btn-sm btn-outline-success" onclick="retryMapLoad()">
+                        <i class="fas fa-redo me-1"></i> Tentar Novamente
+                    </button>
+                </div>
+            </div>
+        `;
+        return;
+    }
     
     // Usar tiles mais leves para melhor performance
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 18,
-        maxNativeZoom: 17
-    }).addTo(map);
+    try {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18,
+            maxNativeZoom: 17
+        }).addTo(map);
+        console.log('✅ Tile layer adicionado ao mapa');
+    } catch (error) {
+        console.error('❌ Erro ao adicionar tile layer:', error);
+    }
     
     // Carregar dados das embarcações com timeout
     // Usar URL absoluta para funcionar em produção
     const apiUrl = window.location.origin + '/api/mapa/';
-    const fetchPromise = fetch(apiUrl);
+    console.log('📡 Carregando dados do mapa de:', apiUrl);
+    
+    const fetchPromise = fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+        },
+        cache: 'no-cache'
+    }).catch(error => {
+        console.error('❌ Erro na requisição fetch:', error);
+        throw error;
+    });
+    
     const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 10000)
+        setTimeout(() => reject(new Error('Timeout ao carregar dados do mapa')), 15000)
     );
     
     Promise.race([fetchPromise, timeoutPromise])
-        .then(response => response.json())
+        .then(response => {
+            console.log('📥 Resposta recebida:', response.status, response.statusText);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            console.log('Dados do mapa carregados:', data);
+            console.log('✅ Dados do mapa carregados:', data);
             
             if (data.embarcacoes && data.embarcacoes.length > 0) {
                 // Filtrar apenas embarcações com coordenadas válidas
@@ -161,16 +219,28 @@ function initializeMap() {
                             
                             const marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
                             
-                            // Popup simplificado
-                            marker.bindPopup(`
-                                <div class="popup-content">
+                            // Verificar se tem imagem
+                            const imagemUrl = embarcacao.imagem_url || embarcacao.imagem || embarcacao.foto_url || embarcacao.url_imagem;
+                            const temImagem = imagemUrl && imagemUrl.trim() !== '';
+                            
+                            // Popup com botão de ver imagem se disponível
+                            const popupContent = `
+                                <div class="popup-content" style="text-align: center; min-width: 150px;">
                                     <strong>${embarcacao.localidade || 'Localidade não informada'}</strong><br>
                                     <span class="badge ${isLegal ? 'bg-success' : 'bg-danger'}">
                                         ${isLegal ? 'Legal' : 'Ilegal'}
                                     </span>
+                                    ${temImagem ? `
+                                    <br><br>
+                                    <button class="btn btn-sm btn-primary" onclick="window.verImagem(${embarcacao.id}); return false;" style="font-size: 11px; padding: 4px 8px;">
+                                        <i class="fas fa-image me-1"></i>Ver Imagem
+                                    </button>
+                                    ` : ''}
                                 </div>
-                            `, {
-                                maxWidth: 200,
+                            `;
+                            
+                            marker.bindPopup(popupContent, {
+                                maxWidth: 250,
                                 className: 'custom-popup'
                             });
                         }
@@ -712,6 +782,11 @@ function verDetalhes(embarcacaoId) {
         const dataCadastro = embarcacao.data_cadastro || embarcacao.data_registro || 'N/A';
         const dataFoto = embarcacao.data_foto || 'N/A';
         
+        // Verificar se tem coordenadas válidas para o mapa
+        const lat = latitude !== 'N/A' ? parseFloat(latitude) : null;
+        const lng = longitude !== 'N/A' ? parseFloat(longitude) : null;
+        const temCoordenadas = lat && lng && !isNaN(lat) && !isNaN(lng);
+        
         modalBody.innerHTML = `
             <div class="row">
                 <div class="col-md-6">
@@ -728,72 +803,345 @@ function verDetalhes(embarcacaoId) {
                         <tr><td><strong>Cadastro:</strong></td><td>${dataCadastro}</td></tr>
                         ${dataFoto !== 'N/A' ? `<tr><td><strong>Foto:</strong></td><td>${dataFoto}</td></tr>` : ''}
                     </table>
+                    
+                    ${imagemUrl ? `
+                        <h6 class="mt-3"><i class="fas fa-camera me-2"></i>Imagem</h6>
+                        <img src="${imagemUrl}" alt="Imagem da embarcação" class="img-fluid rounded" style="max-height: 200px;">
+                    ` : ''}
                 </div>
                 <div class="col-md-6">
                     <h6><i class="fas fa-map-marker-alt me-2"></i>Localização</h6>
-                    <table class="table table-sm">
+                    <table class="table table-sm mb-3">
                         <tr><td><strong>Latitude:</strong></td><td>${latitude}</td></tr>
                         <tr><td><strong>Longitude:</strong></td><td>${longitude}</td></tr>
                     </table>
                     
-                    ${imagemUrl ? `
-                        <h6><i class="fas fa-camera me-2"></i>Imagem</h6>
-                        <img src="${imagemUrl}" alt="Imagem da embarcação" class="img-fluid rounded" style="max-height: 200px;">
-                    ` : '<p class="text-muted"><i class="fas fa-ban"></i> Nenhuma imagem disponível</p>'}
+                    ${temCoordenadas ? `
+                        <h6><i class="fas fa-map me-2"></i>Mini Mapa</h6>
+                        <div id="mini-map" style="height: 300px; border-radius: 10px; border: 1px solid #dee2e6;"></div>
+                    ` : `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Coordenadas não disponíveis</strong><br>
+                            <small>Não é possível exibir o mapa sem coordenadas válidas.</small>
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+        
+        // Inicializar mini mapa se tiver coordenadas válidas
+        if (temCoordenadas) {
+            // Aguardar o modal ser exibido antes de inicializar o mapa
+            setTimeout(() => {
+                // Verificar se Leaflet está disponível, se não, tentar carregar
+                if (typeof L === 'undefined') {
+                    console.log('🔄 Leaflet não disponível, tentando carregar...');
+                    const loadLeafletFn = window.loadLeaflet;
+                    if (typeof loadLeafletFn === 'function') {
+                        loadLeafletFn()
+                            .then(() => {
+                                console.log('✅ Leaflet carregado, inicializando mini mapa...');
+                                initializeMiniMap(lat, lng, embarcacao);
+                            })
+                            .catch(error => {
+                                console.error('❌ Erro ao carregar Leaflet para mini mapa:', error);
+                                showMiniMapError('Não foi possível carregar a biblioteca do mapa');
+                            });
+                    } else {
+                        console.error('❌ Função loadLeaflet não disponível');
+                        showMiniMapError('Biblioteca do mapa não disponível');
+                    }
+                } else {
+                    // Leaflet já está disponível, inicializar diretamente
+                    initializeMiniMap(lat, lng, embarcacao);
+                }
+            }, 500);
+        }
+    }
+    
+    // Mostrar modal
+    const modalElement = document.getElementById('modalDetalhes');
+    if (!modalElement) {
+        console.error('Modal modalDetalhes não encontrado');
+        return;
+    }
+    
+    const modal = new bootstrap.Modal(modalElement);
+    
+    // Redimensionar mapa quando o modal for totalmente exibido
+    modalElement.addEventListener('shown.bs.modal', function() {
+        if (temCoordenadas) {
+            setTimeout(() => {
+                const miniMapContainer = document.getElementById('mini-map');
+                if (miniMapContainer) {
+                    // Se o mapa ainda não foi criado, tentar criar agora
+                    if (!window.currentMiniMap && typeof L !== 'undefined') {
+                        console.log('🔄 Criando mini mapa após modal ser exibido...');
+                        initializeMiniMap(lat, lng, embarcacao);
+                    } else if (window.currentMiniMap) {
+                        try {
+                            window.currentMiniMap.invalidateSize();
+                            console.log('✅ Mini mapa redimensionado');
+                        } catch (error) {
+                            console.warn('Erro ao redimensionar mini mapa:', error);
+                        }
+                    }
+                }
+            }, 200);
+        }
+    });
+    
+    modal.show();
+}
+
+// Função auxiliar para mostrar erro no mini mapa
+function showMiniMapError(message) {
+    const miniMapContainer = document.getElementById('mini-map');
+    if (miniMapContainer) {
+        miniMapContainer.innerHTML = `
+            <div class="d-flex align-items-center justify-content-center h-100">
+                <div class="text-center text-muted">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+                    <p>Mini-mapa indisponível</p>
+                    <small>${message}</small>
                 </div>
             </div>
         `;
     }
+}
+
+// Função para inicializar mini mapa no modal
+function initializeMiniMap(lat, lng, embarcacao) {
+    console.log('🗺️ Inicializando mini mapa:', lat, lng);
     
-    // Mostrar modal
-    const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
-    modal.show();
+    const miniMapContainer = document.getElementById('mini-map');
+    if (!miniMapContainer) {
+        console.warn('❌ Container mini-map não encontrado');
+        return;
+    }
+    
+    // Verificar se o container está visível
+    if (miniMapContainer.offsetParent === null) {
+        console.log('⏳ Container mini-map não está visível, aguardando...');
+        setTimeout(() => initializeMiniMap(lat, lng, embarcacao), 200);
+        return;
+    }
+    
+    // Verificar se Leaflet está disponível
+    if (typeof L === 'undefined') {
+        console.warn('❌ Leaflet não está disponível para mini mapa');
+        showMiniMapError('Biblioteca do mapa não foi carregada');
+        return;
+    }
+    
+    try {
+        // Limpar container
+        miniMapContainer.innerHTML = '';
+        
+        // Garantir que o container tenha altura
+        if (!miniMapContainer.style.height) {
+            miniMapContainer.style.height = '300px';
+        }
+        
+        console.log('✅ Criando mapa Leaflet...');
+        
+        // Criar mapa
+        const map = L.map('mini-map', {
+            zoomControl: true,
+            preferCanvas: false
+        }).setView([lat, lng], 15);
+        
+        // Salvar referência do mapa para redimensionamento
+        window.currentMiniMap = map;
+        
+        console.log('✅ Mapa criado, adicionando tiles...');
+        
+        // Adicionar tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+        
+        console.log('✅ Tiles adicionados');
+        
+        // Redimensionar mapa após um pequeno delay para garantir que o modal está visível
+        setTimeout(() => {
+            try {
+                map.invalidateSize();
+                console.log('✅ Mapa redimensionado');
+            } catch (error) {
+                console.warn('⚠️ Erro ao redimensionar mapa inicial:', error);
+            }
+        }, 300);
+        
+        // Adicionar marcador
+        const isLegal = embarcacao.classificacao && embarcacao.classificacao.toLowerCase() === 'legal';
+        const markerColor = isLegal ? '#28a745' : '#dc3545';
+        
+        const marker = L.circleMarker([lat, lng], {
+            color: markerColor,
+            fillColor: markerColor,
+            fillOpacity: 0.8,
+            radius: 15,
+            weight: 3
+        }).addTo(map);
+        
+        // Adicionar popup
+        const localidade = embarcacao.localidade || embarcacao.nome || 'N/A';
+        marker.bindPopup(`
+            <div style="text-align: center;">
+                <h6 style="margin: 0 0 10px 0;">${localidade}</h6>
+                <span class="badge ${isLegal ? 'bg-success' : 'bg-danger'}">
+                    ${isLegal ? 'Legal' : 'Ilegal'}
+                </span>
+                <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                    <strong>Coordenadas:</strong><br>
+                    ${lat.toFixed(6)}, ${lng.toFixed(6)}
+                </div>
+            </div>
+        `).openPopup();
+        
+        console.log('✅ Mini mapa criado com sucesso');
+    } catch (error) {
+        console.error('❌ Erro ao criar mini-mapa:', error);
+        miniMapContainer.innerHTML = `
+            <div class="d-flex align-items-center justify-content-center h-100">
+                <div class="text-center text-muted">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+                    <p>Erro ao carregar mapa</p>
+                    <small>${error.message || 'Erro desconhecido'}</small>
+                </div>
+            </div>
+        `;
+    }
 }
 
 function verImagem(embarcacaoId) {
-    console.log('Ver imagem da embarcação:', embarcacaoId);
+    console.log('🖼️ Ver imagem da embarcação:', embarcacaoId);
     console.log('Tipo do ID:', typeof embarcacaoId);
     
-    // Buscar dados da embarcação
-    const embarcacao = window.navigationCache?.cache?.embarcacoes?.find(e => e.id == embarcacaoId);
-    
-    if (!embarcacao) {
-        console.warn('Embarcação não encontrada:', embarcacaoId);
-        console.log('IDs disponíveis:', window.navigationCache?.cache?.embarcacoes?.map(e => e.id));
-        alert('Embarcação não encontrada.');
+    // Verificar se o modal existe
+    const modalElement = document.getElementById('modalImagem');
+    if (!modalElement) {
+        console.error('❌ Modal de imagem não encontrado no DOM');
+        alert('Erro: Modal de imagem não encontrado. Recarregue a página.');
         return;
     }
     
-    // Verificar diferentes campos possíveis para imagem
-    const imagemUrl = embarcacao.imagem_url || embarcacao.imagem || embarcacao.foto_url || embarcacao.url_imagem;
-    
-    if (!imagemUrl) {
-        console.warn('Imagem não encontrada para embarcação:', embarcacaoId);
-        alert('Imagem não disponível para esta embarcação.');
-        return;
-    }
-    
-    // Preencher modal de imagem
+    // Buscar elementos do modal
     const imagemElement = document.getElementById('imagem-embarcacao');
     const tituloElement = document.getElementById('imagem-titulo');
     const linkElement = document.getElementById('link-imagem-original');
     
-    if (imagemElement) {
-        imagemElement.src = imagemUrl;
+    if (!imagemElement || !tituloElement || !linkElement) {
+        console.error('❌ Elementos do modal não encontrados');
+        alert('Erro: Elementos do modal não encontrados.');
+        return;
+    }
+    
+    // Função auxiliar para buscar embarcação da API se não estiver no cache
+    async function buscarEmbarcacao() {
+        // Tentar primeiro no cache
+        let embarcacao = window.navigationCache?.cache?.embarcacoes?.find(e => e.id == embarcacaoId || e.id == String(embarcacaoId));
+        
+        if (embarcacao) {
+            console.log('✅ Embarcação encontrada no cache');
+            return embarcacao;
+        }
+        
+        // Se não encontrou no cache, buscar na API
+        console.log('🔍 Buscando embarcação na API...');
+        try {
+            const response = await fetch('/api/mapa/');
+            const data = await response.json();
+            
+            if (data.embarcacoes && Array.isArray(data.embarcacoes)) {
+                embarcacao = data.embarcacoes.find(e => e.id == embarcacaoId || e.id == String(embarcacaoId));
+                
+                if (embarcacao) {
+                    console.log('✅ Embarcação encontrada na API');
+                    return embarcacao;
+                }
+            }
+        } catch (error) {
+            console.error('❌ Erro ao buscar embarcação na API:', error);
+        }
+        
+        return null;
+    }
+    
+    // Mostrar loading
+    imagemElement.style.display = 'none';
+    tituloElement.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div><p class="mt-2 text-muted">Carregando imagem...</p>';
+    
+    // Buscar embarcação e exibir imagem
+    buscarEmbarcacao().then(embarcacao => {
+        if (!embarcacao) {
+            console.warn('⚠️ Embarcação não encontrada:', embarcacaoId);
+            tituloElement.innerHTML = '<p class="text-danger">Embarcação não encontrada.</p>';
+            return;
+        }
+        
+        // Verificar diferentes campos possíveis para imagem
+        let imagemUrl = embarcacao.imagem_url || embarcacao.imagem || embarcacao.foto_url || embarcacao.url_imagem;
+        
+        if (!imagemUrl) {
+            console.warn('⚠️ Imagem não encontrada para embarcação:', embarcacaoId);
+            tituloElement.innerHTML = '<p class="text-warning">Imagem não disponível para esta embarcação.</p>';
+            return;
+        }
+        
+        // Converter HTTP para HTTPS se necessário
+        if (imagemUrl.startsWith('http://')) {
+            imagemUrl = imagemUrl.replace('http://', 'https://');
+            console.log('🔒 URL convertida para HTTPS:', imagemUrl);
+        }
+        
+        // Converter URL relativa para absoluta
+        if (imagemUrl.startsWith('/')) {
+            imagemUrl = `${window.location.origin}${imagemUrl}`;
+            console.log('🔗 URL relativa convertida para absoluta:', imagemUrl);
+        }
+        
+        console.log('📸 URL final da imagem:', imagemUrl);
+        
+        // Configurar elementos do modal
         imagemElement.alt = `Imagem da embarcação ${embarcacao.id}`;
-    }
-    
-    if (tituloElement) {
+        imagemElement.style.display = 'none';
+        
         tituloElement.textContent = `Embarcação ${embarcacao.id} - ${embarcacao.localidade || embarcacao.nome || 'Nome não especificado'}`;
-    }
-    
-    if (linkElement) {
         linkElement.href = imagemUrl;
-    }
-    
-    // Mostrar modal
-    const modal = new bootstrap.Modal(document.getElementById('modalImagem'));
-    modal.show();
+        
+        // Handler de erro para a imagem
+        imagemElement.onerror = function() {
+            console.error('❌ Erro ao carregar imagem:', imagemUrl);
+            imagemElement.style.display = 'none';
+            tituloElement.innerHTML = `
+                <p class="text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Erro ao carregar imagem
+                </p>
+                <small class="text-muted">URL: ${imagemUrl}</small>
+            `;
+        };
+        
+        // Handler de sucesso
+        imagemElement.onload = function() {
+            console.log('✅ Imagem carregada com sucesso');
+            imagemElement.style.display = 'block';
+        };
+        
+        // Carregar imagem
+        imagemElement.src = imagemUrl;
+        
+        // Mostrar modal
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }).catch(error => {
+        console.error('❌ Erro ao buscar embarcação:', error);
+        tituloElement.innerHTML = '<p class="text-danger">Erro ao carregar dados da embarcação.</p>';
+    });
 }
 
 function verNoMapa(embarcacaoId) {
@@ -893,6 +1241,7 @@ window.verDetalhes = verDetalhes;
 window.verImagem = verImagem;
 window.verNoMapa = verNoMapa;
 window.debugEmbarcacao = debugEmbarcacao;
+window.initializeMiniMap = initializeMiniMap;
 
 // Atualizar números abaixo do gráfico
 function updateChartNumbers(legal, illegal) {
